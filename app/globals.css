@@ -188,6 +188,15 @@ svg {
   grid-template-columns: 1.3fr 1fr;
   min-height: 615px;
 }
+.hero-single {
+  grid-template-columns: 1fr;
+}
+.hero-single .hero-copy {
+  max-width: 980px;
+}
+.hero-single .intro {
+  max-width: 650px;
+}
 .hero-copy {
   padding: 70px 5% 28px 8.4%;
   display: flex;
@@ -275,6 +284,14 @@ em {
     transparent 58%
   );
   animation: art-sheen 7s ease-in-out infinite;
+}
+.orbit-showcase {
+  padding: 0 5.5% 80px;
+}
+.orbit-showcase .orbit-art {
+  min-height: 540px;
+  border: 1px solid #303a26;
+  border-radius: 10px;
 }
 .art-grid {
   position: absolute;
@@ -1177,6 +1194,15 @@ td {
     height: 260px;
     border-left: 0;
     border-top: 1px solid #303529;
+  }
+  .orbit-showcase {
+    padding: 0 20px 52px;
+  }
+  .orbit-showcase .orbit-art {
+    display: block;
+    height: 520px;
+    min-height: 520px;
+    border: 1px solid #303a26;
   }
   .orb {
     width: 260px;

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { api, Cards, MessageForm } from "./platform";
 import { ArrowUpRight } from "lucide-react";
+import { VerifiedVoices } from "./premium-home";
 export default function HomeLive({ mode = "extras" }: { mode?: string }) {
   const [data, setData] = useState<any>(),
     [info, setInfo] = useState<any>(),
@@ -250,6 +251,7 @@ export default function HomeLive({ mode = "extras" }: { mode?: string }) {
           </div>
         </section>
       )}
+      <VerifiedVoices events={data.events} />
       <section className="section">
         <div className="eyebrow">STAY IN THE LOOP</div>
         <h2>Your community. Your next opportunity.</h2>

@@ -840,7 +840,10 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               ["outcomes", "Event outcomes"],
               ["agenda", "Agenda"],
               ["faqs", "Frequently asked questions"],
-              ["testimonials", "Testimonials (verified only)"],
+              [
+                "testimonials",
+                "Verified testimonials — one per line: Name | Location | Quote | Approved photo URL",
+              ],
               ["cancellation", "Cancellation / refund information"],
               ["benefits", "Event or course benefits"],
             ].map(([k, l]) => (

@@ -1,5 +1,5 @@
 import HomeLive from "./home-live";
-import { PremiumMotion, TrustReels } from "./premium-home";
+import { PremiumMotion, TrustPrinciples, TrustReels } from "./premium-home";
 import { Header } from "./platform";
 import {
   ArrowUpRight,
@@ -127,6 +127,7 @@ export default function Home() {
           </div>
         </section>
         <TrustReels />
+        <TrustPrinciples />
         <HomeLive />
         <section className="partner-band">
           <div className="eyebrow">LET'S MAKE IT HAPPEN</div>
@@ -159,7 +160,6 @@ export default function Home() {
         <div>
           <a href="/partners">Partnerships</a>
           <a href="/contact">Contact</a>
-          <a href="/admin">Admin Dashboard</a>
         </div>
         <div>
           <a href="/privacy">Privacy Policy</a>

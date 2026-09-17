@@ -109,7 +109,9 @@ export function Header() {
         <span>
           <i className="status-pulse" /> PAKISTAN'S AI COMMUNITY
         </span>
-        <KarachiClock />
+        <strong className="top-message">
+          IDEAS GROW FASTER IN THE RIGHT ROOM.
+        </strong>
         <span className="top-status-tag">LEARN · CONNECT · BUILD</span>
       </div>
       <header className="nav">
@@ -161,33 +163,6 @@ export function Header() {
         </div>
       </header>
     </>
-  );
-}
-
-function KarachiClock() {
-  const [time, setTime] = useState("");
-  useEffect(() => {
-    const update = () =>
-      setTime(
-        new Intl.DateTimeFormat("en-GB", {
-          timeZone: "Asia/Karachi",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }).format(new Date()),
-      );
-    update();
-    const timer = window.setInterval(update, 1000);
-    return () => window.clearInterval(timer);
-  }, []);
-  return (
-    <span
-      className="karachi-clock"
-      aria-label={`Karachi time ${time || "loading"}`}
-    >
-      KARACHI <b>{time || "--:--:--"}</b> PKT
-    </span>
   );
 }
 export function Upload({
@@ -334,7 +309,6 @@ export default function Platform({ path }: { path: string[] }) {
         <a href="/contact">Contact</a>
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
-        <a href="/admin">Admin</a>
       </div>
     </>
   );

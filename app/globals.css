@@ -486,7 +486,7 @@ h2 {
   max-width: 300px;
 }
 .partner-band {
-  margin: 0 5.5% 80px;
+  margin: 80px 5.5% 80px;
   padding: 50px;
   background: #b9f464;
   color: #17200d;
@@ -1261,7 +1261,7 @@ td {
     gap: 15px;
   }
   .partner-band {
-    margin: 0 20px 44px;
+    margin: 64px 20px 44px;
     padding: 28px 22px;
   }
   .partner-band h2 {
@@ -1384,6 +1384,10 @@ td {
   }
   .panel {
     padding: 21px;
+  }
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

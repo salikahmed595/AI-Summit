@@ -1048,6 +1048,11 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               value={form.about}
               onChange={set("about")}
             />
+            <Area
+              label="Founder story note (optional summary for the About page)"
+              value={form.founderStory}
+              onChange={set("founderStory")}
+            />
             <Choice
               label="Featured event"
               value={form.featured || "none"}

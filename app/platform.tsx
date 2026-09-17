@@ -18,6 +18,39 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import PassDownload from "./pass-download";
 import Admin from "./admin-panel";
+
+const defaultFounderStory = [
+  {
+    label: "JANUARY 2026",
+    title: "It began with curiosity.",
+    body: "Before PAICONS had a name, there was only a question: could artificial intelligence be made less intimidating and more useful for ordinary people? Salik Ahmed began with a phone, an Instagram page, and the patience to learn in public. No studio. No large team. No shortcut. Just the conviction that the future should be understandable to the people living in it.",
+  },
+  {
+    label: "ONE VIDEO AT A TIME",
+    title: "The quiet work mattered.",
+    body: "Some posts travelled. Others did not. There were ideas that failed, days that felt uncertain, and the familiar doubt that arrives when you are building before anyone else can see the shape of it. Salik kept making the next video anyway — not because everything was figured out, but because progress is often built from the courage to take one more step.",
+  },
+  {
+    label: "THE TURNING POINT",
+    title: "People needed more than content.",
+    body: "Then the messages began. Students wanted direction. Developers wanted peers. Founders wanted the right people in the room. Business owners wanted a practical way into AI. The question changed. It was no longer only, “How do we explain AI?” It became, “What could happen if the people ready to learn, build and lead actually found one another?”",
+  },
+  {
+    label: "THE ROOM THAT WAS MISSING",
+    title: "Talent was everywhere. Connection was not.",
+    body: "A student could have the drive to build but no founder to learn from. A founder could have an idea but not know the developer who could bring it to life. An experienced professional could have years of wisdom and no bridge to the next generation. Everyone was moving — but too often, everyone was moving alone.",
+  },
+  {
+    label: "WHAT GREW",
+    title: "An idea became a community.",
+    body: "Today, more than 300 people are connected through this shared curiosity: students, developers, founders, entrepreneurs, business owners and professionals. Along the way came milestones — NICAT finalist, Antler shortlist, and a Top 10 place in the Youth Innovation Challenge. They matter because they prove that a starting point does not have to decide a destination. But the people in the room matter more.",
+  },
+  {
+    label: "WHY PAICONS EXISTS",
+    title: "One conversation can change a direction.",
+    body: "PAICONS exists so that more people in Pakistan can stop growing in isolation. A conversation can become an idea. A mentor can save years of mistakes. A new friend can become a collaborator. A single event can put a future co-founder, customer or opportunity in the same room. Events end. The relationships formed inside them can keep moving for years.",
+  },
+];
 export async function api(
   path: string,
   data?: unknown,
@@ -853,30 +886,79 @@ function Info({ section, data }: any) {
   if (section === "about")
     return (
       <>
-        <div className="eyebrow">
-          PAKISTAN AI COLLABORATION & OPPORTUNITIES NETWORK
-        </div>
-        <h1>Learn. Connect. Build.</h1>
-        <p style={{ maxWidth: 800, whiteSpace: "pre-wrap" }}>
-          {c.about ||
-            "PAICONS brings students, developers, founders, researchers and professionals together around artificial intelligence. Starting in Karachi, we create space for practical education, meaningful collaboration and new opportunities across Pakistan."}
-        </p>
-        <div className="grid">
-          <div className="panel">
-            <h2>Events & community</h2>
+        <section className="founder-hero">
+          <div className="eyebrow">A NOTE FROM SALIK AHMED</div>
+          <h1>
+            Pakistan grows faster
+            <br />
+            when good people find each other.
+          </h1>
+          <p>
+            PAICONS began with a simple belief: access to the right room can
+            change a person’s direction.
+          </p>
+          <div className="founder-signature">
+            SALIK AHMED · FOUNDER, PAICONS
+          </div>
+        </section>
+
+        <section
+          className="founder-letter"
+          aria-label="The PAICONS founding story"
+        >
+          <div className="founder-intro">
+            <span>WHY THIS EXISTS</span>
             <p>
-              Meet the people shaping Pakistan’s AI ecosystem through summits,
-              meetups, networking sessions, and university programs.
+              {c.founderStory ||
+                c.about ||
+                "PAICONS brings students, developers, founders, researchers and professionals together around artificial intelligence. Starting in Karachi, we create space for practical education, meaningful collaboration and new opportunities across Pakistan."}
             </p>
           </div>
-          <div className="panel">
-            <h2>Education & opportunity</h2>
-            <p>
-              Build practical skills through courses and workshops, then turn
-              what you learn into collaboration, careers, and new ventures.
-            </p>
-          </div>
-        </div>
+
+          {defaultFounderStory.map((chapter, index) => (
+            <article className="story-chapter" key={chapter.label}>
+              <div className="story-marker">
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <i />
+              </div>
+              <div>
+                <div className="eyebrow">{chapter.label}</div>
+                <h2>{chapter.title}</h2>
+                <p>{chapter.body}</p>
+              </div>
+            </article>
+          ))}
+
+          <blockquote className="founder-quote">
+            “You do not need to have everything figured out before you start.
+            You need enough courage to take the next step.”
+          </blockquote>
+
+          <article className="story-chapter story-final">
+            <div className="story-marker">
+              <span>07</span>
+              <i />
+            </div>
+            <div>
+              <div className="eyebrow">AN OPEN INVITATION</div>
+              <h2>You do not need to be an expert to sit with us.</h2>
+              <p>
+                You do not need an impressive LinkedIn profile, a startup, or
+                every answer. Come with curiosity. Come with questions. Come
+                with an idea you want to explore. The room is stronger when
+                every person brings what they know and leaves with someone new
+                to learn from.
+              </p>
+              <p>
+                This is still the beginning. If you believe Pakistan grows
+                faster when good people find each other, welcome to PAICONS.
+              </p>
+              <a className="button" href="/events">
+                Find your next room <ArrowUpRight size={18} />
+              </a>
+            </div>
+          </article>
+        </section>
       </>
     );
   if (["privacy", "terms", "refund-policy"].includes(section)) {

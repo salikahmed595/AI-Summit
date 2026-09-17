@@ -134,6 +134,26 @@ export default function HomeLive({ mode = "extras" }: { mode?: string }) {
     .split("\n")
     .map((x: string) => x.split(":"))
     .filter((x: string[]) => x.length === 2 && /^\d+$/.test(x[1].trim()));
+  const eventsSection = (
+    <section className="section" data-reveal>
+      <div className="section-heading">
+        <div>
+          <div className="eyebrow">03 / FIND YOUR PEOPLE</div>
+          <h2>Upcoming events.</h2>
+        </div>
+        <a className="text-button" href="/events">
+          View all ↗
+        </a>
+      </div>
+      <Cards
+        items={data.events
+          .filter((e: any) => e.date >= new Date().toISOString().slice(0, 10))
+          .slice(0, 4)}
+        kind="events"
+      />
+    </section>
+  );
+  if (mode === "events") return eventsSection;
   return (
     <>
       {data.config.announcement && (
@@ -141,23 +161,6 @@ export default function HomeLive({ mode = "extras" }: { mode?: string }) {
           <div className="panel">{data.config.announcement}</div>
         </div>
       )}
-      <section className="section">
-        <div className="section-heading">
-          <div>
-            <div className="eyebrow">04 / FIND YOUR PEOPLE</div>
-            <h2>Upcoming events.</h2>
-          </div>
-          <a className="text-button" href="/events">
-            View all ↗
-          </a>
-        </div>
-        <Cards
-          items={data.events
-            .filter((e: any) => e.date >= new Date().toISOString().slice(0, 10))
-            .slice(0, 4)}
-          kind="events"
-        />
-      </section>
       <section className="section">
         <div className="section-heading">
           <div>

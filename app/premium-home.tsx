@@ -47,7 +47,7 @@ export function TrustReels() {
     <section className="reels-section" data-reveal>
       <div className="reels-heading">
         <div>
-          <div className="eyebrow">03 / PROOF, NOT PROMISES</div>
+          <div className="eyebrow">04 / PROOF, NOT PROMISES</div>
           <h2>
             Real rooms. Real people.
             <br />

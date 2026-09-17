@@ -28,6 +28,9 @@
 }
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 body {
   margin: 0;
@@ -35,7 +38,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+main,
+footer,
+.nav,
+.top-status,
+.page,
+.page-footer {
+  min-width: 0;
+  max-width: 100%;
+}
+img,
+video,
+canvas {
+  max-width: 100%;
 }
 a {
   text-decoration: none;
@@ -343,6 +362,7 @@ em {
   justify-content: flex-start;
   padding-inline: 4%;
   animation: ticker-slide 13s linear infinite alternate;
+  overflow: hidden;
 }
 .ticker span {
   min-width: max-content;
@@ -793,6 +813,37 @@ footer {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 35px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 90% 15%, #b9f46415, transparent 22%),
+    linear-gradient(135deg, #12170f 0%, #0d100c 48%, #172015 100%);
+}
+footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.55;
+  background-image:
+    linear-gradient(
+      115deg,
+      transparent 0 49.5%,
+      #b9f4640b 50%,
+      transparent 50.5%
+    ),
+    linear-gradient(#b9f46408 1px, transparent 1px),
+    linear-gradient(90deg, #b9f46408 1px, transparent 1px);
+  background-size:
+    180px 180px,
+    36px 36px,
+    36px 36px;
+  mask-image: linear-gradient(to left, #000, transparent 80%);
+}
+footer > * {
+  position: relative;
+  z-index: 1;
 }
 footer p {
   font-size: 12px;
@@ -821,6 +872,120 @@ footer > div:not(:first-child) {
 .footer-bottom span {
   font-size: 8px;
   letter-spacing: 1px;
+}
+
+.founder-hero {
+  position: relative;
+  max-width: 960px;
+  padding: 30px 0 70px;
+  border-bottom: 1px solid #394032;
+}
+.founder-hero::after {
+  content: "01";
+  position: absolute;
+  right: 0;
+  bottom: 30px;
+  color: #b9f46422;
+  font-size: clamp(90px, 15vw, 180px);
+  font-weight: 800;
+  letter-spacing: -0.13em;
+  line-height: 0.8;
+  pointer-events: none;
+}
+.founder-hero h1 {
+  max-width: 900px;
+  font-size: clamp(46px, 6vw, 82px);
+  letter-spacing: -0.065em;
+}
+.founder-hero p {
+  max-width: 560px;
+  color: #c5ccc0;
+  font-size: 1.1rem;
+}
+.founder-signature {
+  margin-top: 32px;
+  color: #b9f464;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.founder-letter {
+  max-width: 920px;
+  padding: 76px 0 28px;
+}
+.founder-intro {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 40px;
+  margin-bottom: 74px;
+}
+.founder-intro > span {
+  color: #b9f464;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+.founder-intro p {
+  max-width: 640px;
+  margin: 0;
+  color: #e5eade;
+  font-size: 1.28rem;
+  line-height: 1.56;
+}
+.story-chapter {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 54px;
+  padding: 0 0 68px;
+}
+.story-marker {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-top: 4px;
+  color: #b9f464;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.story-marker i {
+  width: 38px;
+  height: 1px;
+  margin-top: 7px;
+  background: #58684a;
+}
+.story-chapter h2 {
+  max-width: 650px;
+  margin: 14px 0 18px;
+  font-size: clamp(2rem, 4.1vw, 3.5rem);
+  letter-spacing: -0.055em;
+}
+.story-chapter p {
+  max-width: 690px;
+  margin: 0;
+  color: #bdc5b5;
+  font-size: 1.05rem;
+  line-height: 1.82;
+}
+.story-chapter p + p {
+  margin-top: 18px;
+}
+.founder-quote {
+  max-width: 780px;
+  margin: 4px 0 74px 110px;
+  padding: 34px 0 34px 36px;
+  border-left: 2px solid #b9f464;
+  color: #e7eedf;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.25;
+}
+.story-final {
+  padding-bottom: 38px;
+}
+.story-final .button {
+  margin-top: 30px;
 }
 .page {
   max-width: 1150px;
@@ -926,8 +1091,7 @@ td {
 }
 @media (min-width: 1500px) {
   body {
-    max-width: 1800px;
-    margin: auto;
+    max-width: none;
   }
 }
 @media (max-width: 1000px) {
@@ -1021,6 +1185,8 @@ td {
     width: 45px;
   }
   .ticker {
+    width: 100%;
+    min-width: 0;
     overflow: hidden;
     white-space: nowrap;
     justify-content: start;
@@ -1092,6 +1258,52 @@ td {
     padding: 35px 20px 20px;
     grid-template-columns: 1fr 1fr;
     gap: 35px;
+  }
+  .founder-hero {
+    padding: 14px 0 46px;
+  }
+  .founder-hero::after {
+    right: 8px;
+    bottom: 24px;
+    font-size: 92px;
+  }
+  .founder-hero h1 {
+    font-size: clamp(2.6rem, 13vw, 3.5rem);
+    letter-spacing: -0.06em;
+  }
+  .founder-hero p {
+    max-width: 88%;
+    font-size: 1rem;
+  }
+  .founder-letter {
+    padding: 48px 0 8px;
+  }
+  .founder-intro,
+  .story-chapter {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+  .founder-intro {
+    margin-bottom: 52px;
+  }
+  .founder-intro p {
+    font-size: 1.08rem;
+  }
+  .story-chapter {
+    padding-bottom: 48px;
+  }
+  .story-chapter h2 {
+    margin: 9px 0 14px;
+    font-size: 2rem;
+  }
+  .story-chapter p {
+    font-size: 1rem;
+    line-height: 1.72;
+  }
+  .founder-quote {
+    margin: 0 0 50px;
+    padding: 26px 0 26px 22px;
+    font-size: 1.56rem;
   }
   .footer-bottom span {
     display: none;

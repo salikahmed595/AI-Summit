@@ -89,6 +89,7 @@ const detail = z.object({
   nameY: z.coerce.number().min(0).max(1200).default(710),
   hero: short.default("Where Pakistan connects with AI."),
   about: txt.default(""),
+  founderStory: txt.default(""),
   featured: short.default(""),
   stats: txt.default(""),
   community: short.default(""),

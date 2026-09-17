@@ -126,6 +126,7 @@ export default function Home() {
             ))}
           </div>
         </section>
+        <HomeLive mode="events" />
         <TrustReels />
         <TrustPrinciples />
         <HomeLive />

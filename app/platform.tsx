@@ -104,53 +104,90 @@ export function Choice({ label, value, onChange, options }: any) {
 }
 export function Header() {
   return (
-    <header className="nav">
-      <a className="brand" href="/">
-        PAICON<span>®</span>
-      </a>
-      <nav>
-        {[
-          "Events",
-          "Courses",
-          "Membership",
-          "About",
-          "Partners",
-          "Contact",
-        ].map((x) => (
-          <a href={"/" + x.toLowerCase()} key={x}>
-            {x}
-          </a>
-        ))}
-      </nav>
-      <div className="row">
-        <a className="button small" href="/events">
-          Get Tickets <ArrowUpRight size={16} />
-        </a>
-        <Sheet>
-          <SheetTrigger aria-label="Open navigation" className="mobile-menu">
-            <Menu size={20} />
-          </SheetTrigger>
-          <SheetContent>
-            <SheetTitle>PAICON</SheetTitle>
-            <div className="mobile-links">
-              {[
-                "Home",
-                "Events",
-                "Courses",
-                "Membership",
-                "About",
-                "Partners",
-                "Contact",
-              ].map((x) => (
-                <a key={x} href={x === "Home" ? "/" : "/" + x.toLowerCase()}>
-                  {x}
-                </a>
-              ))}
-            </div>
-          </SheetContent>
-        </Sheet>
+    <>
+      <div className="top-status">
+        <span>
+          <i className="status-pulse" /> PAKISTAN'S AI COMMUNITY
+        </span>
+        <KarachiClock />
+        <span className="top-status-tag">LEARN · CONNECT · BUILD</span>
       </div>
-    </header>
+      <header className="nav">
+        <a className="brand" href="/" aria-label="PAICONS home">
+          PAICONS<span>®</span>
+        </a>
+        <nav>
+          {[
+            ["Home", "/"],
+            ["Events", "/events"],
+            ["Courses", "/courses"],
+            ["Membership", "/membership"],
+            ["About", "/about"],
+            ["Partners", "/partners"],
+            ["Contact", "/contact"],
+          ].map(([label, href]) => (
+            <a href={href} key={label}>
+              {label}
+            </a>
+          ))}
+        </nav>
+        <div className="row">
+          <a className="button small" href="/events">
+            Get Tickets <ArrowUpRight size={16} />
+          </a>
+          <Sheet>
+            <SheetTrigger aria-label="Open navigation" className="mobile-menu">
+              <Menu size={20} />
+            </SheetTrigger>
+            <SheetContent>
+              <SheetTitle>PAICONS</SheetTitle>
+              <div className="mobile-links">
+                {[
+                  "Home",
+                  "Events",
+                  "Courses",
+                  "Membership",
+                  "About",
+                  "Partners",
+                  "Contact",
+                ].map((x) => (
+                  <a key={x} href={x === "Home" ? "/" : "/" + x.toLowerCase()}>
+                    {x}
+                  </a>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </header>
+    </>
+  );
+}
+
+function KarachiClock() {
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const update = () =>
+      setTime(
+        new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Asia/Karachi",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        }).format(new Date()),
+      );
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return (
+    <span
+      className="karachi-clock"
+      aria-label={`Karachi time ${time || "loading"}`}
+    >
+      KARACHI <b>{time || "--:--:--"}</b> PKT
+    </span>
   );
 }
 export function Upload({
@@ -211,7 +248,7 @@ export function Cards({ items, kind }: any) {
             <img className="card-img" src={e.banner} alt="" loading="lazy" />
           ) : (
             <div className="mini-art">
-              PAICON <ArrowUpRight />
+              PAICONS <ArrowUpRight />
             </div>
           )}
           <div className="eyebrow" style={{ marginTop: 22 }}>
@@ -242,7 +279,7 @@ export function Cards({ items, kind }: any) {
       <p>
         {kind === "courses"
           ? "Published courses and workshops will appear here."
-          : "PAICON will announce upcoming events here. Check back for dates and passes."}
+          : "PAICONS will announce upcoming events here. Check back for dates and passes."}
       </p>
       <a className="text-button" href="/contact">
         Stay in touch <ArrowUpRight size={18} />
@@ -293,7 +330,7 @@ export default function Platform({ path }: { path: string[] }) {
         )}
       </main>
       <div className="page-footer">
-        <a href="/">PAICON · Learn. Connect. Build.</a>
+        <a href="/">PAICONS · Learn. Connect. Build.</a>
         <a href="/contact">Contact</a>
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
@@ -342,7 +379,7 @@ function Listing({ items, kind }: any) {
       context.registerTool(
         {
           name: "filter_paicon_events",
-          description: "Filter the visible published PAICON listing by title.",
+          description: "Filter the visible published PAICONS listing by title.",
           inputSchema: {
             type: "object",
             properties: { query: { type: "string" } },
@@ -743,7 +780,7 @@ function Registration({ event, ticket, config }: any) {
             <p style={{ whiteSpace: "pre-wrap" }}>{config.payment}</p>
           ) : (
             <p className="error">
-              Payment details are not available yet. Please contact PAICON.
+              Payment details are not available yet. Please contact PAICONS.
             </p>
           )}
           <Choice
@@ -767,7 +804,9 @@ function Registration({ event, ticket, config }: any) {
               onChange={(e) => setReceipt(e.target.files?.[0])}
             />
           </label>
-          <p>Your pass is issued after PAICON manually verifies the payment.</p>
+          <p>
+            Your pass is issued after PAICONS manually verifies the payment.
+          </p>
         </>
       )}
       <label className="row">
@@ -810,7 +849,7 @@ function Info({ section, data }: any) {
   if (["contact", "partners", "membership"].includes(section))
     return (
       <>
-        <div className="eyebrow">PAICON COMMUNITY</div>
+        <div className="eyebrow">PAICONS COMMUNITY</div>
         <h1>
           {section === "partners"
             ? "Build Pakistan's AI future with us."
@@ -820,7 +859,7 @@ function Info({ section, data }: any) {
         </h1>
         <p>
           {section === "partners"
-            ? "Partner with PAICON through sponsorship, education, technology, venues, media or community."
+            ? "Partner with PAICONS through sponsorship, education, technology, venues, media or community."
             : section === "membership"
               ? "Join the updates list for events, courses and community opportunities."
               : "Questions about events, speaking, courses or partnerships? Send us a message."}
@@ -846,7 +885,7 @@ function Info({ section, data }: any) {
         <h1>Learn. Connect. Build.</h1>
         <p style={{ maxWidth: 800, whiteSpace: "pre-wrap" }}>
           {c.about ||
-            "PAICON brings students, developers, founders, researchers and professionals together around artificial intelligence. Starting in Karachi, we create space for practical education, meaningful collaboration and new opportunities across Pakistan."}
+            "PAICONS brings students, developers, founders, researchers and professionals together around artificial intelligence. Starting in Karachi, we create space for practical education, meaningful collaboration and new opportunities across Pakistan."}
         </p>
         <div className="grid">
           <div className="panel">
@@ -879,10 +918,10 @@ function Info({ section, data }: any) {
         </h1>
         <p style={{ whiteSpace: "pre-wrap" }}>
           {text ||
-            "PAICON has not published this policy yet. Please contact the organizer before registering."}
+            "PAICONS has not published this policy yet. Please contact the organizer before registering."}
         </p>
         <a href="/contact" className="button">
-          Contact PAICON
+          Contact PAICONS
         </a>
       </>
     );
@@ -1035,7 +1074,7 @@ function Verify({ qr }: any) {
   }, [qr]);
   return (
     <>
-      <div className="eyebrow">PAICON TICKET VERIFICATION</div>
+      <div className="eyebrow">PAICONS TICKET VERIFICATION</div>
       <h1 className={result?.status === "VALID" ? "success" : ""}>
         {result?.status || "Checking ticket…"}
       </h1>

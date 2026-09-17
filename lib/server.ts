@@ -83,12 +83,12 @@ export async function content(kind: string, published = true) {
 export async function settings() {
   return (
     (await content("settings"))[0] || {
-      title: "PAICON",
+      title: "PAICONS",
       hero: "Where Pakistan connects with AI.",
       about:
         "Pakistan AI Collaboration & Opportunities Network brings curious minds together to learn, connect, and build.",
       caption:
-        "Hello, my name is {NAME} and I'm attending {EVENT_NAME} by PAICON — Pakistan AI Collaboration & Opportunities Network. Join me at {VENUE} on {DATE}. #PAICON",
+        "Hello, my name is {NAME} and I'm attending {EVENT_NAME} by PAICONS — Pakistan AI Collaboration & Opportunities Network. Join me at {VENUE} on {DATE}. #PAICONS",
     }
   );
 }

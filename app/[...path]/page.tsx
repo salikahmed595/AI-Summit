@@ -14,7 +14,7 @@ export async function generateMetadata({
     runtime().SITE_URL || "https://paicon-network.sure-emu-1764.chatgpt.site";
   let title = path[0].replaceAll("-", " ");
   let description =
-    "Learn. Connect. Build. Explore PAICON events, courses and community.";
+    "Learn. Connect. Build. Explore PAICONS events, courses and community.";
   let image: string | undefined;
   try {
     if (["events", "courses"].includes(path[0]) && path[1]) {
@@ -29,7 +29,7 @@ export async function generateMetadata({
     }
   } catch {}
   return {
-    title: title.charAt(0).toUpperCase() + title.slice(1) + " | PAICON",
+    title: title.charAt(0).toUpperCase() + title.slice(1) + " | PAICONS",
     description,
     robots: privatePage ? { index: false, follow: false } : undefined,
     alternates: { canonical: base + "/" + path.join("/") },
@@ -64,10 +64,10 @@ export default async function Page({
       return (
         <main className="page admin-login">
           <a href="/" className="brand">
-            PAICON
+            PAICONS
           </a>
           <div className="eyebrow">SECURE ORGANIZER ACCESS</div>
-          <h1>Run PAICON without touching code.</h1>
+          <h1>Run PAICONS without touching code.</h1>
           <p>
             Create events and courses, manage tickets, review payments, and
             check in attendees from one protected workspace.
@@ -89,12 +89,12 @@ export default async function Page({
       return (
         <main className="page">
           <a href="/" className="brand">
-            PAICON
+            PAICONS
           </a>
           <h1>Private dashboard</h1>
           <p>
             Your account is not on the administrator access list. Contact
-            PAICON's website owner to request access.
+            PAICONS's website owner to request access.
           </p>
           <a className="button" href="/signout-with-chatgpt?return_to=/">
             Sign out
@@ -130,14 +130,14 @@ export default async function Page({
                   addressCountry: "PK",
                 },
               },
-              organizer: { "@type": "Organization", name: "PAICON" },
+              organizer: { "@type": "Organization", name: "PAICONS" },
             }
           : {
               "@context": "https://schema.org",
               "@type": "Course",
               name: e.title,
               description: e.description,
-              provider: { "@type": "Organization", name: "PAICON" },
+              provider: { "@type": "Organization", name: "PAICONS" },
             };
     } else notFound();
   }

@@ -52,7 +52,7 @@ export async function renderPass(data: any, key: string, social = false) {
   ctx.fillStyle = accent;
   ctx.fillRect(0, 0, 1080, 12);
   ctx.font = "bold 68px Arial";
-  ctx.fillText("PAICON", 80, 115);
+  ctx.fillText("PAICONS", 80, 115);
   ctx.font = "20px Arial";
   ctx.fillStyle = "#ced7c7";
   ctx.fillText("Pakistan AI Collaboration & Opportunities Network", 80, 154);
@@ -124,7 +124,7 @@ export async function renderPass(data: any, key: string, social = false) {
     ctx.font = "bold 45px Arial";
     ctx.fillText("See you there.", 80, 1090);
     ctx.font = "26px Arial";
-    ctx.fillText("#PAICON", 80, 1140);
+    ctx.fillText("#PAICONS", 80, 1140);
   }
   ctx.fillStyle = accent;
   ctx.font = "bold 23px Arial";
@@ -174,11 +174,11 @@ export default function PassDownload() {
         doc.setCreationDate(new Date(data.registration.created));
         doc.setFileId(data.registration.id.replaceAll("-", "").toUpperCase());
         doc.addImage(png, "PNG", 0, 0, 1080, 1350, undefined, "NONE");
-        doc.save("PAICON-pass.pdf");
+        doc.save("PAICONS-pass.pdf");
       } else {
         const a = document.createElement("a");
         a.href = png;
-        a.download = social ? "PAICON-social-card.png" : "PAICON-pass.png";
+        a.download = social ? "PAICONS-social-card.png" : "PAICONS-pass.png";
         a.click();
       }
     } catch (e: any) {
@@ -190,7 +190,7 @@ export default function PassDownload() {
   const r = data?.registration;
   return (
     <>
-      <div className="eyebrow">YOUR PAICON REGISTRATION</div>
+      <div className="eyebrow">YOUR PAICONS REGISTRATION</div>
       <h1>
         {r?.status === "active"
           ? "You’re in."
@@ -214,9 +214,9 @@ export default function PassDownload() {
               {r.status === "pending"
                 ? "Your payment is awaiting a human review. Your pass will be available here after approval."
                 : r.status === "rejected"
-                  ? "Your payment was not approved. Please contact PAICON for assistance."
+                  ? "Your payment was not approved. Please contact PAICONS for assistance."
                   : r.status === "cancelled"
-                    ? "This ticket has been cancelled. Contact PAICON for assistance."
+                    ? "This ticket has been cancelled. Contact PAICONS for assistance."
                     : "Your pass is ready. Present its QR code at the event entrance."}
             </p>
             <p>
@@ -248,7 +248,7 @@ export default function PassDownload() {
                 {preview && (
                   <img
                     src={preview}
-                    alt="Your digital PAICON pass"
+                    alt="Your digital PAICONS pass"
                     style={{ width: "100%", maxWidth: 430, borderRadius: 10 }}
                   />
                 )}
@@ -318,7 +318,7 @@ export function caption(data: any) {
   return (
     data.event.caption ||
     data.config.caption ||
-    "Hello, my name is {NAME} and I'm attending {EVENT_NAME} at {VENUE} on {DATE}. #PAICON"
+    "Hello, my name is {NAME} and I'm attending {EVENT_NAME} at {VENUE} on {DATE}. #PAICONS"
   ).replace(
     /\{(NAME|EVENT_NAME|DATE|VENUE)\}/g,
     (_: string, k: string) => values[k],

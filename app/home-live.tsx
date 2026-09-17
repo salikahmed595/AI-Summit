@@ -41,7 +41,7 @@ export default function HomeLive({ mode = "extras" }: { mode?: string }) {
       return (
         <div className="feature">
           <div className="event-art">
-            <span>PAICON PRESENTS</span>
+            <span>PAICONS PRESENTS</span>
             <h3>
               Ideas meet
               <br />
@@ -81,7 +81,7 @@ export default function HomeLive({ mode = "extras" }: { mode?: string }) {
               />
             ) : (
               <div className="event-art">
-                <span>PAICON PRESENTS</span>
+                <span>PAICONS PRESENTS</span>
                 <h3>{e.title}</h3>
               </div>
             )}
@@ -143,7 +143,7 @@ export default function HomeLive({ mode = "extras" }: { mode?: string }) {
       <section className="section">
         <div className="section-heading">
           <div>
-            <div className="eyebrow">03 / FIND YOUR PEOPLE</div>
+            <div className="eyebrow">04 / FIND YOUR PEOPLE</div>
             <h2>Upcoming events.</h2>
           </div>
           <a className="text-button" href="/events">
@@ -160,7 +160,7 @@ export default function HomeLive({ mode = "extras" }: { mode?: string }) {
       <section className="section">
         <div className="section-heading">
           <div>
-            <div className="eyebrow">04 / KEEP LEARNING</div>
+            <div className="eyebrow">05 / KEEP LEARNING</div>
             <h2>Courses & workshops.</h2>
           </div>
           <a className="text-button" href="/courses">
@@ -171,7 +171,7 @@ export default function HomeLive({ mode = "extras" }: { mode?: string }) {
       </section>
       {stats.length > 0 && (
         <section className="section">
-          <h2>The PAICON community.</h2>
+          <h2>The PAICONS community.</h2>
           <div className="grid">
             {stats.map(([label, n]: string[]) => (
               <div className="panel" key={label}>

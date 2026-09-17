@@ -1,4 +1,5 @@
 import HomeLive from "./home-live";
+import { PremiumMotion, TrustReels } from "./premium-home";
 import { Header } from "./platform";
 import {
   ArrowUpRight,
@@ -11,6 +12,7 @@ import {
 export default function Home() {
   return (
     <>
+      <PremiumMotion />
       <Header />
       <main>
         <section className="hero">
@@ -69,7 +71,7 @@ export default function Home() {
           <span>BUILT IN PAKISTAN</span>
           <i>✳</i>
         </div>
-        <section className="section">
+        <section className="section" data-reveal>
           <div className="section-heading">
             <div>
               <div className="eyebrow">01 / WHAT'S NEXT</div>
@@ -81,7 +83,7 @@ export default function Home() {
           </div>
           <HomeLive mode="featured" />
         </section>
-        <section className="section about-section">
+        <section className="section about-section" data-reveal>
           <div>
             <div className="eyebrow">02 / MORE THAN AN EVENT</div>
             <h2>
@@ -92,7 +94,7 @@ export default function Home() {
               <HomeLive mode="about" />
             </p>
             <a className="text-button" href="/about">
-              Meet PAICON <ArrowUpRight size={18} />
+              Meet PAICONS <ArrowUpRight size={18} />
             </a>
           </div>
           <div className="values">
@@ -124,6 +126,7 @@ export default function Home() {
             ))}
           </div>
         </section>
+        <TrustReels />
         <HomeLive />
         <section className="partner-band">
           <div className="eyebrow">LET'S MAKE IT HAPPEN</div>
@@ -140,7 +143,7 @@ export default function Home() {
       <footer>
         <div>
           <a className="brand" href="/">
-            PAICON<span>®</span>
+            PAICONS<span>®</span>
           </a>
           <p>
             Pakistan AI Collaboration &<br />
@@ -151,7 +154,7 @@ export default function Home() {
         <div>
           <a href="/events">Events</a>
           <a href="/courses">Courses</a>
-          <a href="/about">About PAICON</a>
+          <a href="/about">About PAICONS</a>
         </div>
         <div>
           <a href="/partners">Partnerships</a>
@@ -164,7 +167,7 @@ export default function Home() {
           <a href="/refund-policy">Refund Policy</a>
         </div>
         <div className="footer-bottom">
-          © {new Date().getFullYear()} PAICON
+          © {new Date().getFullYear()} PAICONS
           <span>MADE FOR CONNECTION. BUILT FOR POSSIBILITY.</span>
         </div>
       </footer>

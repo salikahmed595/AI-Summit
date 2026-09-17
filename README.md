@@ -1,6 +1,6 @@
-# PAICON
+# PAICONS
 
-PAICON is the Pakistan AI Collaboration & Opportunities Network platform for events, courses, community programs, registrations, payments, digital passes, and venue check-in.
+PAICONS is the Pakistan AI Collaboration & Opportunities Network platform for events, courses, community programs, registrations, payments, digital passes, and venue check-in.
 
 ## What is included
 

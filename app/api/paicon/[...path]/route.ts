@@ -35,7 +35,7 @@ const detail = z.object({
   address: short.default(""),
   mapUrl: short.default(""),
   city: short.default("Karachi"),
-  organizer: short.default("PAICON"),
+  organizer: short.default("PAICONS"),
   category: short.default("AI Summit"),
   banner: short.default(""),
   video: short.default(""),
@@ -719,7 +719,7 @@ async function handle(
         : error instanceof Error
           ? error.message
           : "Request failed";
-    console.error("PAICON request failed", msg);
+    console.error("PAICONS request failed", msg);
     return response(
       {
         error: msg.includes("D1_")

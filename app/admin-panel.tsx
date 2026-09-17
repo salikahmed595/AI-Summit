@@ -131,7 +131,7 @@ export default function Admin() {
     <>
       <div className="row" style={{ justifyContent: "space-between" }}>
         <div>
-          <div className="eyebrow">PAICON / ORGANIZER WORKSPACE</div>
+          <div className="eyebrow">PAICONS / ORGANIZER WORKSPACE</div>
           <h1>Make it happen.</h1>
         </div>
         <a className="text-button" href="/signout-with-chatgpt?return_to=/">
@@ -590,7 +590,7 @@ export default function Admin() {
                 if (!match) throw new Error();
                 location.href = "/verify/" + match[1];
               } catch {
-                setError("Enter a valid PAICON verification link");
+                setError("Enter a valid PAICONS verification link");
               }
             }}
           >
@@ -658,7 +658,7 @@ export default function Admin() {
 function RecordEditor({ record, data, onSave, onCancel }: any) {
   const kind = record.kind;
   const [form, setForm] = useState<any>({
-    title: kind === "settings" ? "PAICON" : "",
+    title: kind === "settings" ? "PAICONS" : "",
     slug: kind === "settings" ? "website" : "",
     status: "draft",
     city: "Karachi",
@@ -917,7 +917,7 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
             )}
             <h3>Pass template</h3>
             <p>
-              The PAICON layout is included. Upload an optional background and
+              The PAICONS layout is included. Upload an optional background and
               configure photo placement. All outputs use standard rendering.
             </p>
             <Upload
@@ -971,7 +971,7 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               value={form.event || "none"}
               onChange={set("event")}
               options={[
-                { value: "none", label: "All PAICON" },
+                { value: "none", label: "All PAICONS" },
                 ...data.records
                   .filter((e: any) => e.kind === "events")
                   .map((e: any) => ({ value: e.id, label: e.title })),
@@ -1041,7 +1041,7 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               onChange={set("hero")}
             />
             <Area
-              label="About PAICON"
+              label="About PAICONS"
               value={form.about}
               onChange={set("about")}
             />

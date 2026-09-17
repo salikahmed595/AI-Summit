@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -8,13 +8,45 @@ import {
   ScanLine,
   ShieldCheck,
   UserCheck,
+  X,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
-const reels = Array.from({ length: 9 }, (_, index) => ({
-  src: `/media/reels/reel${index + 1}.mp4`,
-  poster: `/media/reels/reel${index + 1}.webp`,
-  label: `Community moment ${String(index + 1).padStart(2, "0")}`,
+const reels = [3, 1, 2, 4, 5, 6, 7, 8, 9].map((number) => ({
+  src: `/media/reels/reel${number}.mp4`,
+  poster: `/media/reels/reel${number}.webp`,
+  label: `Community moment ${String(number).padStart(2, "0")}`,
 }));
+
+export function CommunityPopup() {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "success" | "error">("idle");
+  useEffect(() => {
+    if (localStorage.getItem("paicons-community-popup-v1")) return;
+    const timer = window.setTimeout(() => setOpen(true), 3000);
+    return () => window.clearTimeout(timer);
+  }, []);
+  const dismiss = () => {
+    localStorage.setItem("paicons-community-popup-v1", "dismissed");
+    setOpen(false);
+  };
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setState("sending");
+    try {
+      const response = await fetch("/api/paicon/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "community", name: "Community subscriber", email, message: "Homepage updates signup" }),
+      });
+      if (!response.ok) throw new Error("Unable to subscribe");
+      localStorage.setItem("paicons-community-popup-v1", "subscribed");
+      setState("success");
+    } catch { setState("error"); }
+  };
+  return <Dialog open={open} onOpenChange={(next) => next ? setOpen(true) : dismiss()}><DialogContent className="community-popup"><button className="popup-close" type="button" onClick={dismiss} aria-label="Close update signup"><X size={18} /></button><div className="eyebrow">STAY IN THE LOOP</div><DialogTitle>Your community. Your next opportunity.</DialogTitle><p>Get the next PAICONS event, workshop and community update in your inbox.</p><form onSubmit={submit}><label htmlFor="community-email">Email address</label><input id="community-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" required autoComplete="email" /><button className="button" disabled={state === "sending"}>{state === "sending" ? "Saving…" : "Keep Me Updated"}<ArrowUpRight size={18} /></button></form>{state === "success" && <p className="success" role="status">You’re on the list. We’ll be in touch.</p>}{state === "error" && <p className="error" role="alert">Please try again in a moment.</p>}</DialogContent></Dialog>;
+}
 
 export function PremiumMotion() {
   useEffect(() => {

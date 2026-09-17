@@ -89,19 +89,6 @@ export function PremiumMotion() {
 
 export function TrustReels() {
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [showAll, setShowAll] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 651px)");
-    const sync = () => setShowAll(query.matches);
-    sync();
-    query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
-  }, []);
-  useEffect(() => {
-    if (activeIndex === null) return;
-    videoRefs.current[activeIndex]?.play().catch(() => {});
-  }, [activeIndex]);
   const playOnly = (active: HTMLVideoElement) => {
     videoRefs.current.forEach((video) => {
       if (video && video !== active && !video.paused) video.pause();
@@ -125,16 +112,16 @@ export function TrustReels() {
       </div>
       <div className="reels-window" aria-label="PAICONS community videos">
         <div className="reels-track">
-          {reels.slice(0, showAll ? reels.length : 3).map((reel, index) => (
+          {reels.map((reel, index) => (
             <article className="reel-card" key={reel.src}>
               <div className="reel-frame">
                 <video
                   ref={(video) => {
                     videoRefs.current[index] = video;
                   }}
-                  src={activeIndex === index ? reel.src : undefined}
+                  src={reel.src}
                   poster={reel.poster}
-                  controls={activeIndex === index}
+                  controls
                   playsInline
                   preload="none"
                   onPlay={(event) => playOnly(event.currentTarget)}
@@ -143,7 +130,9 @@ export function TrustReels() {
                 <span className="reel-index">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                {activeIndex !== index && <button className="reel-play" type="button" onClick={() => setActiveIndex(index)} aria-label={`Play ${reel.label}`}><Play size={14} fill="currentColor" /> WATCH</button>}
+                <span className="reel-play">
+                  <Play size={14} fill="currentColor" /> WATCH
+                </span>
               </div>
               <div className="reel-caption">
                 <span>{reel.label}</span>
@@ -153,7 +142,6 @@ export function TrustReels() {
           ))}
         </div>
       </div>
-      {!showAll && <div className="reels-more"><button className="text-button" type="button" onClick={() => setShowAll(true)}>Show all community moments <ArrowUpRight size={16} /></button></div>}
       <div className="reels-foot">
         <span>DRAG TO EXPLORE</span>
         <span>09 COMMUNITY STORIES</span>

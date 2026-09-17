@@ -50,7 +50,6 @@ export function CommunityPopup() {
 
 export function PremiumMotion() {
   useEffect(() => {
-    const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -62,14 +61,47 @@ export function PremiumMotion() {
       },
       { threshold: 0.12 },
     );
-    elements.forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
+    const observeReveals = (root: Document | HTMLElement = document) => {
+      root.querySelectorAll<HTMLElement>("[data-reveal]:not(.is-observed)").forEach((element) => {
+        element.classList.add("is-observed");
+        observer.observe(element);
+      });
+    };
+    observeReveals();
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        if (node.matches("[data-reveal]") && !node.classList.contains("is-observed")) {
+          node.classList.add("is-observed");
+          observer.observe(node);
+        }
+        observeReveals(node);
+      }));
+    });
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      mutationObserver.disconnect();
+      observer.disconnect();
+    };
   }, []);
   return null;
 }
 
 export function TrustReels() {
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 651px)");
+    const sync = () => setShowAll(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    if (activeIndex === null) return;
+    videoRefs.current[activeIndex]?.play().catch(() => {});
+  }, [activeIndex]);
   const playOnly = (active: HTMLVideoElement) => {
     videoRefs.current.forEach((video) => {
       if (video && video !== active && !video.paused) video.pause();
@@ -93,16 +125,16 @@ export function TrustReels() {
       </div>
       <div className="reels-window" aria-label="PAICONS community videos">
         <div className="reels-track">
-          {reels.map((reel, index) => (
+          {reels.slice(0, showAll ? reels.length : 3).map((reel, index) => (
             <article className="reel-card" key={reel.src}>
               <div className="reel-frame">
                 <video
                   ref={(video) => {
                     videoRefs.current[index] = video;
                   }}
-                  src={reel.src}
+                  src={activeIndex === index ? reel.src : undefined}
                   poster={reel.poster}
-                  controls
+                  controls={activeIndex === index}
                   playsInline
                   preload="none"
                   onPlay={(event) => playOnly(event.currentTarget)}
@@ -111,9 +143,7 @@ export function TrustReels() {
                 <span className="reel-index">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <span className="reel-play">
-                  <Play size={14} fill="currentColor" /> WATCH
-                </span>
+                {activeIndex !== index && <button className="reel-play" type="button" onClick={() => setActiveIndex(index)} aria-label={`Play ${reel.label}`}><Play size={14} fill="currentColor" /> WATCH</button>}
               </div>
               <div className="reel-caption">
                 <span>{reel.label}</span>
@@ -123,6 +153,7 @@ export function TrustReels() {
           ))}
         </div>
       </div>
+      {!showAll && <div className="reels-more"><button className="text-button" type="button" onClick={() => setShowAll(true)}>Show all community moments <ArrowUpRight size={16} /></button></div>}
       <div className="reels-foot">
         <span>DRAG TO EXPLORE</span>
         <span>09 COMMUNITY STORIES</span>

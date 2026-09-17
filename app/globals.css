@@ -737,6 +737,8 @@ h2 {
   color: #18200f;
   background: #b9f464;
   border-radius: 30px;
+  border: 0;
+  cursor: pointer;
 }
 .reel-caption {
   display: flex;
@@ -754,6 +756,10 @@ h2 {
   color: #747d6d;
   font-size: 8px;
   letter-spacing: 1.6px;
+}
+.reels-more {
+  display: none;
+  padding: 4px 20px 0;
 }
 
 @keyframes status-pulse {
@@ -1744,5 +1750,59 @@ label textarea {
     font-size: 13px;
     font-weight: 800;
     box-shadow: 0 12px 45px #000a;
+  }
+}
+
+/* Mobile is a purpose-built, fast path: content is immediately visible and
+   decorative desktop motion is removed from the critical rendering path. */
+@media (max-width: 650px) {
+  .hero {
+    min-height: auto;
+  }
+  .hero-copy {
+    min-height: calc(100svh - 101px);
+    padding: 32px 20px 26px;
+  }
+  .orbit-art {
+    display: none;
+  }
+  .ticker {
+    animation: none;
+  }
+  .section {
+    padding: 52px 20px;
+  }
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .event-art {
+    min-height: 205px;
+    padding: 24px;
+  }
+  .event-art h3 {
+    font-size: 2.15rem;
+  }
+  .feature-copy {
+    padding: 28px 20px 30px;
+  }
+  .feature-copy p {
+    max-width: none;
+    font-size: 1rem;
+  }
+  .feature-copy .button {
+    width: 100%;
+    justify-content: center;
+  }
+  .reels-section {
+    padding: 52px 0 46px;
+  }
+  .reels-more {
+    display: block;
+  }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

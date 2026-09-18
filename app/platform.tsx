@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { ArrowUpRight, Menu } from "lucide-react";
+import { Fragment, useEffect, useState } from "react";
+import { ArrowUpRight, Menu, Mail } from "lucide-react";
 import { googleSignIn } from "./auth-actions";
 import {
   Select,
@@ -20,6 +20,25 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import PassDownload from "./pass-download";
 import Admin from "./admin-panel";
 
+function InstagramIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
 const defaultFounderStory = [
   {
     label: "JANUARY 2026",
@@ -52,6 +71,189 @@ const defaultFounderStory = [
     body: "PAICONS exists so that more people in Pakistan can stop growing in isolation. A conversation can become an idea. A mentor can save years of mistakes. A new friend can become a collaborator. A single event can put a future co-founder, customer or opportunity in the same room. Events end. The relationships formed inside them can keep moving for years.",
   },
 ];
+type LegalSection = { heading: string; body: string; list?: string[] };
+type LegalDoc = {
+  title: string;
+  effective: string;
+  updated: string;
+  intro: string;
+  sections: LegalSection[];
+  disclaimer: string;
+};
+const legalDocs: Record<"privacy" | "terms", LegalDoc> = {
+  privacy: {
+    title: "Privacy Policy",
+    effective: "September 27, 2026",
+    updated: "September 19, 2026",
+    intro:
+      "PAICONS respects your privacy. This Policy explains what information we may collect, why we use it, and the choices available to you.",
+    sections: [
+      {
+        heading: "1. Information We May Collect",
+        body: "Depending on how you use PAICONS, we may collect information such as your name, email address, phone number, city, organization, profession, event registration details, membership information, transaction status, form responses, and information you choose to share with us.",
+      },
+      {
+        heading: "2. Technical Information",
+        body: "Our website and service providers may automatically receive limited technical information such as IP address, browser type, device type, pages visited, referral source, approximate location, cookies, and website interactions.",
+      },
+      {
+        heading: "3. Why We Use Your Information",
+        body: "We may use your information to run events and services, process registrations, issue passes, manage accounts, communicate event updates, provide support, improve our website, prevent misuse, maintain security, and meet legal or operational requirements.",
+      },
+      {
+        heading: "4. Emails and 'Stay in the Loop'",
+        body: "If you enter your email in our newsletter or 'Stay in the Loop' form, we may send you PAICONS updates, events, workshops, community news, and opportunities. You can unsubscribe from promotional messages at any time using the unsubscribe option in the email or by contacting us.",
+      },
+      {
+        heading: "5. Payments",
+        body: "If a PAICONS service requires payment, a third-party payment provider may process the transaction. PAICONS may receive information such as payment status, transaction reference, and purchase details. We do not need to store complete payment card details when the payment provider handles them directly.",
+      },
+      {
+        heading: "6. Cookies and Analytics",
+        body: "We may use cookies and analytics tools to keep the website working, remember preferences, understand traffic, measure performance, and improve the user experience. Where required, we may ask for permission before using optional cookies.",
+      },
+      {
+        heading: "7. Service Providers and Partners",
+        body: "We may use third-party providers for hosting, databases, authentication, email, analytics, payment processing, event registration, and cloud services. These providers may process limited information needed to provide their service. If an event is co-organized with another organization, relevant registration information may be shared when reasonably necessary to run that event.",
+      },
+      {
+        heading: "8. We Do Not Sell Personal Information",
+        body: "PAICONS does not sell your personal information. We may share information with service providers, event partners, professional advisers, or authorities where reasonably necessary, legally required, or needed to protect users and the platform.",
+      },
+      {
+        heading: "9. Photos and Videos",
+        body: "PAICONS events may be photographed or recorded. Images or videos may be used for event recaps, community updates, website content, social media, or promotion. If you have a reasonable concern about identifiable event media featuring you, contact us and we will review the request.",
+      },
+      {
+        heading: "10. Public Information and Community Posts",
+        body: "Information you choose to post in a public or group community area may be visible to other members. Do not post passwords, financial information, private documents, or other sensitive information that you do not want others to see.",
+      },
+      {
+        heading: "11. Security",
+        body: "We use reasonable technical and organizational steps to protect information. However, no website, database, or internet transmission can be guaranteed to be completely secure.",
+      },
+      {
+        heading: "12. Data Retention",
+        body: "We keep personal information only for as long as reasonably needed to provide services, maintain records, resolve problems, protect the platform, or meet legal and accounting requirements. Information may later be deleted, anonymized, or securely archived where appropriate.",
+      },
+      {
+        heading: "13. Your Choices",
+        body: "Depending on applicable law and the circumstances, you may ask us to correct inaccurate information, update your details, stop promotional emails, or delete certain personal information. We may need to verify your identity before completing some requests.",
+      },
+      {
+        heading: "14. Children and Younger Users",
+        body: "Some PAICONS activities may be suitable for students or younger participants. Where appropriate, we may require parent or guardian permission for specific activities involving minors. We do not intentionally ask children for information that is unnecessary for the activity.",
+      },
+      {
+        heading: "15. External Links",
+        body: "Our website may link to third-party websites or services. Their privacy and security practices are controlled by them, not PAICONS. Please review their policies when you use those services.",
+      },
+      {
+        heading: "16. Protecting Users and PAICONS",
+        body: "We may use or preserve relevant account, registration, security, or communication records when reasonably necessary to investigate fraud, impersonation, harassment, misuse of PAICONS' identity, security incidents, legal claims, or serious violations of our Terms. We will only use or share such information as reasonably necessary and permitted by law.",
+      },
+      {
+        heading: "17. Changes to This Policy",
+        body: "We may update this Privacy Policy when our services, technology, or legal obligations change. The latest version will be posted on our website with its updated date.",
+      },
+      {
+        heading: "18. Contact",
+        body: "For privacy questions or requests, contact PAICONS using the official contact email shown on our website.",
+      },
+    ],
+    disclaimer:
+      "Note: This document is a general website privacy template and is not a substitute for advice from a qualified lawyer.",
+  },
+  terms: {
+    title: "Terms of Use",
+    effective: "September 27, 2026",
+    updated: "September 19, 2026",
+    intro:
+      "Please read these Terms before using PAICONS. By using our website, registering for an event, joining our community, buying a ticket, or using a PAICONS service, you agree to these Terms.",
+    sections: [
+      {
+        heading: "1. About PAICONS",
+        body: "PAICONS is a community and platform that connects people interested in artificial intelligence, technology, learning, entrepreneurship, networking, and professional opportunities in Pakistan. We may offer events, meetups, workshops, courses, memberships, digital passes, community access, speaker sessions, and partner activities.",
+      },
+      {
+        heading: "2. Who Can Use PAICONS",
+        body: "You must provide correct information when you register. Some events or programs may have age, location, profession, invitation, or other entry requirements. We may refuse or cancel a registration if these requirements are not met or if information is false.",
+      },
+      {
+        heading: "3. Registrations, Tickets and Passes",
+        body: "Tickets, QR codes, digital passes, memberships, and registrations are for the person or use stated at the time of registration, unless we clearly allow transfers. You must not copy, alter, forge, sell, or misuse a PAICONS pass or registration.",
+      },
+      {
+        heading: "4. Payments and Refunds",
+        body: "Paid services will show the price before purchase. Payment may be handled by a third-party payment provider. Refund rules may vary by event or service and will be shown where possible before purchase. Unless we state otherwise, missing an event does not automatically qualify for a refund. If PAICONS cancels a paid event, we may offer a refund, credit, replacement date, or another reasonable solution.",
+      },
+      {
+        heading: "5. Event Changes",
+        body: "Event dates, times, venues, speakers, schedules, or formats may change because of operational, safety, venue, partner, or other practical reasons. We will try to communicate important changes, but we cannot guarantee that every event detail will remain unchanged.",
+      },
+      {
+        heading: "6. Community Conduct",
+        body: "PAICONS is intended to be a respectful and useful community. We may remove or restrict a person who harms the safety, trust, or normal operation of the community. You must not:",
+        list: [
+          "harass, threaten, bully, discriminate against, or deliberately target another person;",
+          "spam members, run scams, or repeatedly promote products or services without permission;",
+          "impersonate PAICONS, its team, a speaker, partner, sponsor, or another member;",
+          "publish or spread knowingly false statements presented as facts about PAICONS, its team, events, speakers, partners, or members;",
+          "create fake pages, accounts, tickets, certificates, endorsements, partnerships, or claims that suggest PAICONS supports you when it does not;",
+          "use PAICONS branding, logos, event material, photos, or identity in a misleading way;",
+          "interfere with the website, registration systems, payments, events, or community operations;",
+          "use PAICONS for illegal activity, fraud, malware, data theft, or unauthorized collection of personal information.",
+        ],
+      },
+      {
+        heading: "7. Honest Reviews and Fair Criticism",
+        body: "PAICONS does not prohibit honest opinions, fair reviews, complaints, or good-faith criticism. However, users must not knowingly publish false factual claims, impersonate PAICONS, fabricate evidence, or deliberately mislead people about an official PAICONS position, partnership, event, or statement.",
+      },
+      {
+        heading: "8. Protecting PAICONS' Name and Reputation",
+        body: "The PAICONS name, logo, event identity, and official communication channels must not be used in a way that falsely suggests approval, sponsorship, employment, partnership, certification, or endorsement. If we reasonably believe content or conduct is misleading, fraudulent, unlawful, or falsely presented as official PAICONS content, we may ask for correction or removal, suspend access, cancel registration, or take other lawful steps.",
+      },
+      {
+        heading: "9. Photos, Video and Event Media",
+        body: "PAICONS events may be photographed or recorded. Event media may be used for community updates, event recaps, social media, website content, and promotion. Where practical, a person who does not want to be prominently featured may contact the PAICONS team. Separate consent may be requested for dedicated interviews or similar recordings.",
+      },
+      {
+        heading: "10. Speakers, Partners and Third Parties",
+        body: "PAICONS may work with universities, companies, venues, speakers, sponsors, communities, and service providers. Their views and services are their own unless PAICONS clearly states otherwise. A logo, speaker appearance, or event collaboration does not automatically mean an ongoing partnership or endorsement.",
+      },
+      {
+        heading: "11. No Guaranteed Results",
+        body: "PAICONS creates opportunities to learn, meet people, and participate in events. We do not guarantee jobs, investment, funding, admissions, clients, income, partnerships, business success, or any other specific result.",
+      },
+      {
+        heading: "12. Intellectual Property",
+        body: "PAICONS' original website content, branding, graphics, event material, and other original material belong to PAICONS or their respective rights holders. You may not copy, sell, reproduce, or commercially use them without permission. Speaker-owned and partner-owned material remains the property of its owner.",
+      },
+      {
+        heading: "13. Website Availability",
+        body: "We try to keep the website accurate and available, but errors, maintenance, downtime, or technical problems may happen. We may change, pause, or remove features when needed.",
+      },
+      {
+        heading: "14. Suspension or Removal",
+        body: "We may suspend or remove access to PAICONS services, events, or communities when a person breaks these Terms, creates a safety risk, commits fraud, repeatedly disrupts the community, or misuses PAICONS' identity. Where appropriate, we may first ask the person to correct the issue.",
+      },
+      {
+        heading: "15. Limitation of Liability",
+        body: "To the extent allowed by applicable law, PAICONS is not responsible for indirect or consequential loss caused by use of the website, attendance at an event, reliance on third-party content, or interruption of a service. Nothing in these Terms removes rights that cannot legally be excluded.",
+      },
+      {
+        heading: "16. Changes to These Terms",
+        body: "We may update these Terms when PAICONS changes or when legal or operational requirements change. The latest version will be posted on our website with the updated date.",
+      },
+      {
+        heading: "17. Contact",
+        body: "For questions about these Terms, contact PAICONS at the official contact email shown on our website.",
+      },
+    ],
+    disclaimer:
+      "Note: This document is a general website policy template and is not a substitute for advice from a qualified lawyer.",
+  },
+};
 export async function api(
   path: string,
   data?: unknown,
@@ -876,18 +1078,24 @@ function Info({ section, data }: any) {
           <div className="contact-links">
             <a
               href="mailto:info@paicons.com"
-              className="text-button"
+              className="contact-link"
               rel="noopener noreferrer"
             >
-              info@paicons.com <ArrowUpRight size={16} />
+              <span className="contact-link-icon">
+                <Mail size={22} />
+              </span>
+              info@paicons.com
             </a>
             <a
               href="https://www.instagram.com/paicons_/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-button"
+              className="contact-link"
             >
-              @paicons_ on Instagram <ArrowUpRight size={16} />
+              <span className="contact-link-icon">
+                <InstagramIcon size={22} />
+              </span>
+              @paicons_ on Instagram
             </a>
           </div>
         )}
@@ -918,22 +1126,7 @@ function Info({ section, data }: any) {
             change a person’s direction.
           </p>
           <div className="founder-signature">
-            <img
-              src="/media/salik-ahmed.jpg"
-              alt="Salik Ahmed, Founder of PAICONS"
-              className="founder-photo"
-              loading="lazy"
-            />
-            <span>
-              SALIK AHMED · FOUNDER, PAICONS ·{" "}
-              <a
-                href="https://www.instagram.com/salikbuilds/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                @salikbuilds on Instagram
-              </a>
-            </span>
+            SALIK AHMED · FOUNDER, PAICONS
           </div>
         </section>
 
@@ -951,17 +1144,35 @@ function Info({ section, data }: any) {
           </div>
 
           {defaultFounderStory.map((chapter, index) => (
-            <article className="story-chapter" key={chapter.label}>
-              <div className="story-marker">
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <i />
-              </div>
-              <div>
-                <div className="eyebrow">{chapter.label}</div>
-                <h2>{chapter.title}</h2>
-                <p>{chapter.body}</p>
-              </div>
-            </article>
+            <Fragment key={chapter.label}>
+              <article className="story-chapter">
+                <div className="story-marker">
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <i />
+                </div>
+                <div>
+                  <div className="eyebrow">{chapter.label}</div>
+                  <h2>{chapter.title}</h2>
+                  <p>{chapter.body}</p>
+                </div>
+              </article>
+              {index === 0 && (
+                <figure className="founder-reveal">
+                  <img
+                    src="/media/salik-ahmed.jpg"
+                    alt="Salik Ahmed, Founder of PAICONS"
+                    className="founder-reveal-photo"
+                    loading="lazy"
+                  />
+                  <figcaption className="founder-reveal-caption">
+                    Founder of PAICONS
+                    <span>
+                      (Pakistan AI Collaboration &amp; Opportunities Network)
+                    </span>
+                  </figcaption>
+                </figure>
+              )}
+            </Fragment>
           ))}
 
           <blockquote className="founder-quote">
@@ -993,11 +1204,68 @@ function Info({ section, data }: any) {
               </a>
             </div>
           </article>
+
+          <div className="story-signature">
+            <img
+              src="/media/salik-ahmed.jpg"
+              alt="Salik Ahmed, Founder of PAICONS"
+              className="founder-photo"
+              loading="lazy"
+            />
+            <span>
+              SALIK AHMED · FOUNDER, PAICONS ·{" "}
+              <a
+                href="https://www.instagram.com/salikbuilds/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                @salikbuilds on Instagram
+              </a>
+            </span>
+          </div>
         </section>
       </>
     );
   if (["privacy", "terms", "refund-policy"].includes(section)) {
     const text = c[section === "refund-policy" ? "refund" : section];
+    const doc: LegalDoc | null =
+      section === "privacy" || section === "terms"
+        ? legalDocs[section as "privacy" | "terms"]
+        : null;
+    if (!text && doc)
+      return (
+        <div className="legal-content">
+          <h1>{doc.title}</h1>
+          <p className="legal-meta">
+            Effective Date: {doc.effective} · Last Updated: {doc.updated}
+          </p>
+          <p>{doc.intro}</p>
+          {doc.sections.map((s: LegalSection) => (
+            <section className="legal-section" key={s.heading}>
+              <h2>{s.heading}</h2>
+              <p>{s.body}</p>
+              {s.list && (
+                <ul>
+                  {s.list.map((item: string) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ))}
+          <p className="legal-footer">
+            PAICONS – Pakistan AI Collaboration &amp; Opportunities Network
+            <br />
+            Karachi, Pakistan
+          </p>
+          <p className="legal-disclaimer">
+            <em>{doc.disclaimer}</em>
+          </p>
+          <a href="/contact" className="button">
+            Contact PAICONS
+          </a>
+        </div>
+      );
     return (
       <>
         <h1>

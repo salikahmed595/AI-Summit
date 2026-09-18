@@ -1,4 +1,5 @@
-import { chatGPTSignInPath, requireChatGPTUser } from "@/app/chatgpt-auth";
+import { requireSiteUser } from "@/app/site-auth";
+import { googleSignIn, googleSignOut } from "@/app/auth-actions";
 import { identity, content, runtime } from "@/lib/server";
 import Platform from "@/app/platform";
 import { notFound } from "next/navigation";
@@ -72,17 +73,15 @@ export default async function Page({
             Create events and courses, manage tickets, review payments, and
             check in attendees from one protected workspace.
           </p>
-          <a
-            className="button"
-            href={chatGPTSignInPath("/admin")}
-            target="_top"
-          >
-            Sign in to Admin
-          </a>
+          <form action={googleSignIn.bind(null, "/admin")}>
+            <button className="button" type="submit">
+              Sign in to Admin
+            </button>
+          </form>
         </main>
       );
     }
-    await requireChatGPTUser("/admin");
+    await requireSiteUser("/admin");
     try {
       await identity();
     } catch {
@@ -96,9 +95,11 @@ export default async function Page({
             Your account is not on the administrator access list. Contact
             PAICONS's website owner to request access.
           </p>
-          <a className="button" href="/signout-with-chatgpt?return_to=/">
-            Sign out
-          </a>
+          <form action={googleSignOut.bind(null, "/")}>
+            <button className="button" type="submit">
+              Sign out
+            </button>
+          </form>
         </main>
       );
     }

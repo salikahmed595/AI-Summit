@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Menu } from "lucide-react";
+import { googleSignIn } from "./auth-actions";
 import {
   Select,
   SelectTrigger,
@@ -1161,16 +1162,11 @@ function Verify({ qr }: any) {
           </p>
         )}
         <p className="error">{error}</p>
-        <a
-          className="text-button"
-          href={
-            "/signin-with-chatgpt?return_to=" +
-            encodeURIComponent("/verify/" + qr)
-          }
-          target="_top"
-        >
-          Staff sign in
-        </a>
+        <form action={googleSignIn.bind(null, "/verify/" + qr)}>
+          <button className="text-button" type="submit">
+            Staff sign in
+          </button>
+        </form>
       </div>
     </>
   );

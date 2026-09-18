@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api, Field, Area, Choice, Upload } from "./platform";
+import { googleSignOut } from "./auth-actions";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -134,9 +135,11 @@ export default function Admin() {
           <div className="eyebrow">PAICONS / ORGANIZER WORKSPACE</div>
           <h1>Make it happen.</h1>
         </div>
-        <a className="text-button" href="/signout-with-chatgpt?return_to=/">
-          Sign out
-        </a>
+        <form action={googleSignOut.bind(null, "/")}>
+          <button className="text-button" type="submit">
+            Sign out
+          </button>
+        </form>
       </div>
       <p>Signed in as {data.user}</p>
       {error && (

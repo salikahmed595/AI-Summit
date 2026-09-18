@@ -1,11 +1,12 @@
 import {
-  sqliteTable,
+  pgTable,
   text,
   integer,
+  bigint,
   index,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
-export const records = sqliteTable(
+} from "drizzle-orm/pg-core";
+export const records = pgTable(
   "records",
   {
     id: text("id").primaryKey(),
@@ -21,7 +22,7 @@ export const records = sqliteTable(
     index("records_kind_status").on(t.kind, t.status),
   ],
 );
-export const tickets = sqliteTable(
+export const tickets = pgTable(
   "tickets",
   {
     id: text("id").primaryKey(),
@@ -34,7 +35,7 @@ export const tickets = sqliteTable(
   },
   (t) => [index("tickets_event").on(t.eventId)],
 );
-export const registrations = sqliteTable(
+export const registrations = pgTable(
   "registrations",
   {
     id: text("id").primaryKey(),
@@ -58,28 +59,29 @@ export const registrations = sqliteTable(
     index("registration_ticket_status").on(t.ticketId, t.status),
   ],
 );
-export const files = sqliteTable("files", {
+export const files = pgTable("files", {
   id: text("id").primaryKey(),
   kind: text("kind").notNull(),
   owner: text("owner").notNull(),
   mime: text("mime").notNull(),
   created: text("created").notNull(),
 });
-export const messages = sqliteTable("messages", {
+export const messages = pgTable("messages", {
   id: text("id").primaryKey(),
   kind: text("kind").notNull(),
   data: text("data").notNull(),
   created: text("created").notNull(),
 });
-export const audit = sqliteTable("audit", {
+export const audit = pgTable("audit", {
   id: text("id").primaryKey(),
   actor: text("actor").notNull(),
   action: text("action").notNull(),
   target: text("target").notNull(),
   created: text("created").notNull(),
 });
-export const limits = sqliteTable("limits", {
+export const limits = pgTable("limits", {
   key: text("key").primaryKey(),
   count: integer("count").notNull(),
-  expires: integer("expires").notNull(),
+  // Epoch milliseconds — exceeds 32-bit int range, needs bigint.
+  expires: bigint("expires", { mode: "number" }).notNull(),
 });

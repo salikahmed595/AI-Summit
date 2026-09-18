@@ -58,8 +58,23 @@ function LinkedinIcon({ size = 22 }: { size?: number }) {
     </svg>
   );
 }
+function WhatsappIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 1.67c2.11 0 4.09.82 5.58 2.31a7.85 7.85 0 0 1 2.31 5.59c0 4.36-3.55 7.91-7.91 7.91a7.9 7.9 0 0 1-4.03-1.1l-.29-.17-3 .79.8-2.93-.19-.3a7.86 7.86 0 0 1-1.21-4.2c0-4.36 3.55-7.9 7.94-7.9zm-4.38 4.52c-.15 0-.4.06-.61.3-.21.24-.8.78-.8 1.9 0 1.12.82 2.2.93 2.35.12.15 1.6 2.55 3.95 3.47 1.95.77 2.35.62 2.77.58.42-.04 1.36-.55 1.55-1.09.19-.54.19-1 .13-1.09-.06-.1-.21-.15-.44-.27-.23-.12-1.36-.67-1.57-.74-.21-.08-.36-.12-.51.12-.15.24-.58.74-.71.89-.13.15-.26.17-.49.06-.23-.12-.96-.35-1.83-1.13-.68-.6-1.13-1.35-1.27-1.58-.13-.23-.01-.36.1-.47.11-.11.23-.27.35-.41.11-.14.15-.24.23-.4.08-.16.04-.3-.02-.42-.06-.12-.5-1.24-.7-1.7-.18-.44-.37-.38-.51-.39l-.44-.01z" />
+    </svg>
+  );
+}
 const SALIK_INSTAGRAM = "https://www.instagram.com/salikbuilds/";
 const SALIK_LINKEDIN = "https://www.linkedin.com/in/salikahmed110/";
+const PAICONS_INSTAGRAM = "https://www.instagram.com/paicons_/";
+const PAICONS_WHATSAPP = "https://chat.whatsapp.com/HXYTEtOcO09EVCCYuappJg";
 const defaultFounderStory = [
   {
     label: "JANUARY 2026",
@@ -1108,7 +1123,7 @@ function Info({ section, data }: any) {
               info@paicons.com
             </a>
             <a
-              href="https://www.instagram.com/paicons_/"
+              href={PAICONS_INSTAGRAM}
               target="_blank"
               rel="noopener noreferrer"
               className="contact-link"
@@ -1117,6 +1132,54 @@ function Info({ section, data }: any) {
                 <InstagramIcon size={22} />
               </span>
               @paicons_ on Instagram
+            </a>
+          </div>
+        )}
+        {section === "membership" && (
+          <div className="community-cards">
+            <a
+              href={PAICONS_WHATSAPP}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="community-card community-card-whatsapp"
+            >
+              <span className="community-card-icon">
+                <WhatsappIcon size={26} />
+              </span>
+              <span className="community-card-badge">
+                300+ MEMBERS · ACTIVE DAILY
+              </span>
+              <h3>PAICONS WhatsApp Community</h3>
+              <p>
+                Join 300+ students, developers, founders and AI
+                professionals across Pakistan already learning,
+                collaborating and building together — real opportunities,
+                honest feedback and daily conversation, not just another
+                group chat.
+              </p>
+              <span className="community-card-cta">
+                Join the Community <ArrowUpRight size={18} />
+              </span>
+            </a>
+            <a
+              href={PAICONS_INSTAGRAM}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="community-card"
+            >
+              <span className="community-card-icon">
+                <InstagramIcon size={26} />
+              </span>
+              <span className="community-card-badge">OFFICIAL PAGE</span>
+              <h3>Follow PAICONS on Instagram</h3>
+              <p>
+                Event recaps, founder stories and real moments from
+                Pakistan's AI community — see exactly what you're joining
+                before you show up to your first event.
+              </p>
+              <span className="community-card-cta">
+                Follow @paicons_ <ArrowUpRight size={18} />
+              </span>
             </a>
           </div>
         )}

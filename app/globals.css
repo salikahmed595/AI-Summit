@@ -190,9 +190,11 @@ svg {
 }
 .hero-single {
   grid-template-columns: 1fr;
+  min-height: auto;
 }
 .hero-single .hero-copy {
   max-width: 980px;
+  min-height: 510px;
 }
 .hero-single .intro {
   max-width: 650px;
@@ -286,7 +288,11 @@ em {
   animation: art-sheen 7s ease-in-out infinite;
 }
 .orbit-showcase {
-  padding: 0 5.5% 80px;
+  padding: 0 5.5% 20px;
+  margin-top: -32px;
+}
+.orbit-showcase + .section {
+  padding-top: 40px;
 }
 .orbit-showcase .orbit-art {
   min-height: 540px;
@@ -503,7 +509,7 @@ h2 {
   max-width: 300px;
 }
 .partner-band {
-  margin: 80px 5.5% 80px;
+  margin: 20px 5.5% 64px;
   padding: 50px;
   background: #b9f464;
   color: #17200d;
@@ -1196,7 +1202,11 @@ td {
     border-top: 1px solid #303529;
   }
   .orbit-showcase {
-    padding: 0 20px 52px;
+    padding: 0 20px 16px;
+    margin-top: -20px;
+  }
+  .orbit-showcase + .section {
+    padding-top: 32px;
   }
   .orbit-showcase .orbit-art {
     display: block;
@@ -1287,8 +1297,11 @@ td {
     gap: 15px;
   }
   .partner-band {
-    margin: 64px 20px 44px;
+    margin: 16px 20px 40px;
     padding: 28px 22px;
+  }
+  .hero-single .hero-copy {
+    min-height: auto;
   }
   .partner-band h2 {
     font-size: 35px;

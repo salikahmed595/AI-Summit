@@ -39,6 +39,27 @@ function InstagramIcon({ size = 22 }: { size?: number }) {
     </svg>
   );
 }
+function LinkedinIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect x="2" y="9" width="4" height="12" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  );
+}
+const SALIK_INSTAGRAM = "https://www.instagram.com/salikbuilds/";
+const SALIK_LINKEDIN = "https://www.linkedin.com/in/salikahmed110/";
 const defaultFounderStory = [
   {
     label: "JANUARY 2026",
@@ -1158,18 +1179,46 @@ function Info({ section, data }: any) {
               </article>
               {index === 0 && (
                 <figure className="founder-reveal">
-                  <img
-                    src="/media/salik-ahmed.jpg"
-                    alt="Salik Ahmed, Founder of PAICONS"
-                    className="founder-reveal-photo"
-                    loading="lazy"
-                  />
+                  <div className="founder-reveal-frame">
+                    <img
+                      src="/media/salik-ahmed.jpg"
+                      alt="Salik Ahmed, Founder of PAICONS"
+                      className="founder-reveal-photo"
+                      loading="lazy"
+                    />
+                    <div className="founder-reveal-tag">
+                      <span className="founder-reveal-tag-name">
+                        SALIK AHMED
+                      </span>
+                      <span className="founder-reveal-tag-role">
+                        Founder, PAICONS
+                      </span>
+                    </div>
+                  </div>
                   <figcaption className="founder-reveal-caption">
                     Founder of PAICONS
                     <span>
                       (Pakistan AI Collaboration &amp; Opportunities Network)
                     </span>
                   </figcaption>
+                  <div className="founder-social-box">
+                    <a
+                      href={SALIK_INSTAGRAM}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="founder-social-link"
+                    >
+                      <InstagramIcon size={18} /> @salikbuilds
+                    </a>
+                    <a
+                      href={SALIK_LINKEDIN}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="founder-social-link"
+                    >
+                      <LinkedinIcon size={18} /> Salik Ahmed
+                    </a>
+                  </div>
                 </figure>
               )}
             </Fragment>
@@ -1212,16 +1261,29 @@ function Info({ section, data }: any) {
               className="founder-photo"
               loading="lazy"
             />
-            <span>
-              SALIK AHMED · FOUNDER, PAICONS ·{" "}
-              <a
-                href="https://www.instagram.com/salikbuilds/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                @salikbuilds on Instagram
-              </a>
-            </span>
+            <div className="story-signature-info">
+              <span className="story-signature-name">
+                SALIK AHMED · FOUNDER, PAICONS
+              </span>
+              <div className="founder-social-box founder-social-box-compact">
+                <a
+                  href={SALIK_INSTAGRAM}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="founder-social-link"
+                >
+                  <InstagramIcon size={16} /> @salikbuilds
+                </a>
+                <a
+                  href={SALIK_LINKEDIN}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="founder-social-link"
+                >
+                  <LinkedinIcon size={16} /> Salik Ahmed
+                </a>
+              </div>
+            </div>
           </div>
         </section>
       </>

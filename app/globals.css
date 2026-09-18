@@ -941,31 +941,34 @@ footer > div:not(:first-child) {
   letter-spacing: 0.12em;
 }
 
-/* Small closing photo + Instagram credit at the bottom of the founder story */
+/* Small closing photo + Instagram/LinkedIn credit at the bottom of the story */
 .story-signature {
   margin-top: 56px;
   padding-top: 32px;
   border-top: 1px solid #394032;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
+}
+.founder-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+  border: 1px solid #b9f464;
+  flex-shrink: 0;
+}
+.story-signature-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.story-signature-name {
   color: #b9f464;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
-}
-.founder-photo {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #b9f464;
-  flex-shrink: 0;
-}
-.story-signature a {
-  color: #b9f464;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 /* Fortune-500-style founder reveal, dropped right under the opening chapter */
@@ -976,16 +979,61 @@ footer > div:not(:first-child) {
   align-items: center;
   text-align: center;
 }
+.founder-reveal-frame {
+  position: relative;
+  width: clamp(220px, 28vw, 300px);
+  aspect-ratio: 4 / 5;
+  isolation: isolate;
+}
+.founder-reveal-frame::before {
+  content: "";
+  position: absolute;
+  inset: 20px -20px -20px 20px;
+  z-index: -1;
+  border-radius: 22px;
+  background-image: radial-gradient(#b9f46455 1.6px, transparent 1.6px);
+  background-size: 14px 14px;
+}
 .founder-reveal-photo {
-  width: clamp(180px, 22vw, 260px);
-  height: clamp(180px, 22vw, 260px);
-  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  display: block;
   object-fit: cover;
-  border: 3px solid #b9f464;
-  box-shadow: 0 20px 60px #0009;
+  object-position: top center;
+  border-radius: 20px;
+  border: 2px solid #b9f464;
+  box-shadow: 0 26px 70px #000a;
+}
+.founder-reveal-tag {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #0d110ad9;
+  border-left: 3px solid #b9f464;
+  text-align: left;
+  backdrop-filter: blur(6px);
+}
+.founder-reveal-tag-name {
+  display: block;
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+.founder-reveal-tag-role {
+  display: block;
+  margin-top: 2px;
+  color: #b9f464;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 .founder-reveal-caption {
-  margin-top: 22px;
+  margin-top: 26px;
   color: #f4f7f0;
   font-size: clamp(1.05rem, 1.6vw, 1.3rem);
   font-weight: 800;
@@ -999,6 +1047,38 @@ footer > div:not(:first-child) {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.founder-social-box {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.founder-social-box-compact {
+  justify-content: flex-start;
+  margin-top: 0;
+  gap: 10px;
+}
+.founder-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid #394032;
+  border-radius: 50px;
+  color: #f4f7f0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.founder-social-box-compact .founder-social-link {
+  padding: 6px 12px;
+  font-size: 0.72rem;
+}
+.founder-social-link:hover {
+  border-color: #b9f464;
+  color: #b9f464;
 }
 
 .contact-links {
@@ -1496,10 +1576,17 @@ td {
   .founder-reveal {
     margin: 4px 0 46px;
   }
-  .founder-reveal-photo {
-    width: clamp(150px, 42vw, 200px);
-    height: clamp(150px, 42vw, 200px);
-    border-width: 2px;
+  .founder-reveal-frame {
+    width: clamp(190px, 58vw, 240px);
+  }
+  .founder-reveal-frame::before {
+    inset: 14px -14px -14px 14px;
+  }
+  .founder-reveal-tag {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    padding: 8px 12px;
   }
   .founder-reveal-caption {
     font-size: 1.05rem;
@@ -1507,6 +1594,11 @@ td {
   .story-signature {
     margin-top: 40px;
     padding-top: 24px;
+    align-items: flex-start;
+  }
+  .founder-social-box-compact {
+    flex-direction: column;
+    align-items: flex-start;
   }
   .contact-links {
     gap: 14px;

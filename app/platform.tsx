@@ -872,6 +872,25 @@ function Info({ section, data }: any) {
               ? "Join the updates list for events, courses and community opportunities."
               : "Questions about events, speaking, courses or partnerships? Send us a message."}
         </p>
+        {section === "contact" && (
+          <div className="contact-links">
+            <a
+              href="mailto:info@paicons.com"
+              className="text-button"
+              rel="noopener noreferrer"
+            >
+              info@paicons.com <ArrowUpRight size={16} />
+            </a>
+            <a
+              href="https://www.instagram.com/paicons_/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-button"
+            >
+              @paicons_ on Instagram <ArrowUpRight size={16} />
+            </a>
+          </div>
+        )}
         <MessageForm
           kind={
             section === "partners"
@@ -899,7 +918,22 @@ function Info({ section, data }: any) {
             change a person’s direction.
           </p>
           <div className="founder-signature">
-            SALIK AHMED · FOUNDER, PAICONS
+            <img
+              src="/media/salik-ahmed.jpg"
+              alt="Salik Ahmed, Founder of PAICONS"
+              className="founder-photo"
+              loading="lazy"
+            />
+            <span>
+              SALIK AHMED · FOUNDER, PAICONS ·{" "}
+              <a
+                href="https://www.instagram.com/salikbuilds/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                @salikbuilds on Instagram
+              </a>
+            </span>
           </div>
         </section>
 

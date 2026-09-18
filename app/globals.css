@@ -935,10 +935,32 @@ footer > div:not(:first-child) {
 }
 .founder-signature {
   margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   color: #b9f464;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
+}
+.founder-photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #b9f464;
+  flex-shrink: 0;
+}
+.founder-signature a {
+  color: #b9f464;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin: 8px 0 34px;
 }
 .founder-letter {
   max-width: 920px;

@@ -388,7 +388,10 @@ async function route(req: Request, parts: string[]) {
         await runtime().BUCKET.delete(fid);
         await db().prepare("DELETE FROM files WHERE id=?").bind(fid).run();
       }
-      if (String(err).includes("UNIQUE"))
+      if (
+        String(err).includes("UNIQUE") ||
+        String(err).includes("duplicate key value")
+      )
         throw new Error(
           "This email is already registered for this event. Use your saved registration link.",
         );
@@ -723,9 +726,12 @@ async function handle(
     console.error("PAICONS request failed", msg);
     return response(
       {
-        error: msg.includes("D1_")
-          ? "The service is temporarily unavailable. Please try again."
-          : msg,
+        error:
+          msg.includes("DATABASE_URL") ||
+          msg.includes("NeonDbError") ||
+          msg.includes("fetch failed")
+            ? "The service is temporarily unavailable. Please try again."
+            : msg,
       },
       msg === "Access denied" ? 403 : 400,
     );

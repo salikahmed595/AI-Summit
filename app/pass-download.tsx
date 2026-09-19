@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { api } from "./platform";
+import PhotoPositioner, { type PhotoFrame } from "./photo-positioner";
 function image(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -36,7 +37,18 @@ function fitted(
   }
   ctx.fillText(text, x, y);
 }
-export async function renderPass(data: any, key: string, social = false) {
+// The Fabric-based drag/zoom step (see getPassLayout + PhotoPositioner)
+// produces `positionedBase`: the template and the visitor's own-positioned
+// photo already flattened into one image at the exact export resolution.
+// When it's supplied, this skips its own photo fetch/center-crop entirely
+// and just draws that instead — text and the QR code still go on top the
+// same as always.
+export async function renderPass(
+  data: any,
+  key: string,
+  social = false,
+  positionedBase?: HTMLImageElement,
+) {
   const { event: e, registration: r, ticket: t } = data;
   // Per-ticket pass settings win over the event's own defaults, so tiers
   // like Visitor vs Premium can ship completely different artwork.
@@ -45,15 +57,16 @@ export async function renderPass(data: any, key: string, social = false) {
   const skipBaseText = t.templateHasText ?? e.templateHasText ?? false;
   const c = document.createElement("canvas");
   let template: HTMLImageElement | null = null;
-  if (templateSrc) template = await image(templateSrc);
+  if (!positionedBase && templateSrc) template = await image(templateSrc);
   // Match the canvas to the uploaded template's own aspect ratio instead of
   // forcing every design into a fixed 1080x1350 frame (which would stretch
   // and distort a square or differently-proportioned template).
-  if (template) {
+  const sizeSource = positionedBase || template;
+  if (sizeSource) {
     const maxSide = 1350;
-    const scale = maxSide / Math.max(template.width, template.height);
-    c.width = Math.round(template.width * scale);
-    c.height = Math.round(template.height * scale);
+    const scale = maxSide / Math.max(sizeSource.width, sizeSource.height);
+    c.width = Math.round(sizeSource.width * scale);
+    c.height = Math.round(sizeSource.height * scale);
   } else {
     c.width = 1080;
     c.height = 1350;
@@ -61,7 +74,8 @@ export async function renderPass(data: any, key: string, social = false) {
   const ctx = c.getContext("2d")!;
   ctx.fillStyle = "#10170e";
   ctx.fillRect(0, 0, c.width, c.height);
-  if (template) ctx.drawImage(template, 0, 0, c.width, c.height);
+  if (positionedBase) ctx.drawImage(positionedBase, 0, 0, c.width, c.height);
+  else if (template) ctx.drawImage(template, 0, 0, c.width, c.height);
   const accent = e.accent || "#b9f464";
   if (!skipBaseText) {
     ctx.fillStyle = accent;
@@ -77,38 +91,43 @@ export async function renderPass(data: any, key: string, social = false) {
     ctx.font = "bold 38px Arial";
     fitted(ctx, e.title, 80, 292, c.width - 160, 38);
   }
-  const photoResponse = await fetch("/api/paicon/file/" + r.photo, {
-    headers: { "x-pass-key": key },
-  });
-  if (!photoResponse.ok) throw new Error("Photograph unavailable");
-  const photoUrl = URL.createObjectURL(await photoResponse.blob());
-  let photo: HTMLImageElement;
-  try {
-    photo = await image(photoUrl);
-  } finally {
-    URL.revokeObjectURL(photoUrl);
+  if (!positionedBase) {
+    // Fallback for when the visitor hasn't gone through the interactive
+    // positioning step (or it's unavailable): the old fixed center-crop.
+    const photoResponse = await fetch("/api/paicon/file/" + r.photo, {
+      headers: { "x-pass-key": key },
+    });
+    if (!photoResponse.ok) throw new Error("Photograph unavailable");
+    const photoUrl = URL.createObjectURL(await photoResponse.blob());
+    let photo: HTMLImageElement;
+    try {
+      photo = await image(photoUrl);
+    } finally {
+      URL.revokeObjectURL(photoUrl);
+    }
+    const x = Number(t.photoX ?? e.photoX ?? 80),
+      y = Number(t.photoY ?? e.photoY ?? 330),
+      size = Number(t.photoSize ?? e.photoSize ?? 300);
+    const crop = Math.min(photo.width, photo.height);
+    ctx.save();
+    ctx.beginPath();
+    if (photoShape === "circle")
+      ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+    else ctx.roundRect(x, y, size, size, 12);
+    ctx.clip();
+    ctx.drawImage(
+      photo,
+      (photo.width - crop) / 2,
+      (photo.height - crop) / 2,
+      crop,
+      crop,
+      x,
+      y,
+      size,
+      size,
+    );
+    ctx.restore();
   }
-  const x = Number(t.photoX ?? e.photoX ?? 80),
-    y = Number(t.photoY ?? e.photoY ?? 330),
-    size = Number(t.photoSize ?? e.photoSize ?? 300);
-  const crop = Math.min(photo.width, photo.height);
-  ctx.save();
-  ctx.beginPath();
-  if (photoShape === "circle") ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
-  else ctx.roundRect(x, y, size, size, 12);
-  ctx.clip();
-  ctx.drawImage(
-    photo,
-    (photo.width - crop) / 2,
-    (photo.height - crop) / 2,
-    crop,
-    crop,
-    x,
-    y,
-    size,
-    size,
-  );
-  ctx.restore();
   if (!skipBaseText) {
     ctx.font = "bold 50px Arial";
     fitted(ctx, r.name, 80, Number(e.nameY ?? 710), c.width - 160, 50);
@@ -170,6 +189,18 @@ export default function PassDownload() {
     [busy, setBusy] = useState(""),
     [preview, setPreview] = useState(""),
     [notice, setNotice] = useState("");
+  // Interactive positioning: let the visitor drag/zoom their own uploaded
+  // photo into the frame themselves, instead of an automatic center-crop.
+  const [photoUrl, setPhotoUrl] = useState(""),
+    [frame, setFrame] = useState<PhotoFrame | null>(null),
+    [canvasSize, setCanvasSize] = useState<{ w: number; h: number } | null>(
+      null,
+    ),
+    [templateSrc, setTemplateSrc] = useState(""),
+    [positionedImg, setPositionedImg] = useState<HTMLImageElement | null>(
+      null,
+    ),
+    [repositioning, setRepositioning] = useState(false);
   async function refresh(k: string) {
     try {
       setData(await api("download", undefined, { "x-pass-key": k }));
@@ -184,16 +215,61 @@ export default function PassDownload() {
     if (k) refresh(k);
     else setError("Open your private registration link to access your pass.");
   }, []);
+  // Once the registration is active, work out this ticket's own pass frame
+  // (template + where the photo goes) and fetch the visitor's own uploaded
+  // photo so PhotoPositioner has something to position.
   useEffect(() => {
-    if (data?.registration.status === "active")
-      renderPass(data, key)
+    if (data?.registration.status !== "active") return;
+    let cancelled = false;
+    let objectUrl = "";
+    (async () => {
+      try {
+        const { event: e, ticket: t } = data;
+        const src = t.template || e.template || "";
+        let w = 1080,
+          h = 1350;
+        if (src) {
+          const img = await image(src);
+          const scale = 1350 / Math.max(img.width, img.height);
+          w = Math.round(img.width * scale);
+          h = Math.round(img.height * scale);
+        }
+        const res = await fetch(
+          "/api/paicon/file/" + data.registration.photo,
+          { headers: { "x-pass-key": key } },
+        );
+        if (!res.ok) throw new Error("Photograph unavailable");
+        objectUrl = URL.createObjectURL(await res.blob());
+        if (cancelled) return;
+        setTemplateSrc(src);
+        setCanvasSize({ w, h });
+        setFrame({
+          x: Number(t.photoX ?? e.photoX ?? 80),
+          y: Number(t.photoY ?? e.photoY ?? 330),
+          size: Number(t.photoSize ?? e.photoSize ?? 300),
+          shape: t.photoShape || e.photoShape || "square",
+        });
+        setPhotoUrl(objectUrl);
+      } catch (e: any) {
+        setError(e.message);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [data, key]);
+  useEffect(() => {
+    if (data?.registration.status === "active" && positionedImg)
+      renderPass(data, key, false, positionedImg)
         .then((c) => setPreview(c.toDataURL("image/png")))
         .catch((e) => setError(e.message));
-  }, [data, key]);
+  }, [data, key, positionedImg]);
   async function download(social = false, pdf = false) {
+    if (!positionedImg) return;
     setBusy(social ? "social" : pdf ? "pdf" : "png");
     try {
-      const canvas = await renderPass(data, key, social);
+      const canvas = await renderPass(data, key, social, positionedImg);
       const png = canvas.toDataURL("image/png");
       if (pdf) {
         const { jsPDF } = await import("jspdf");
@@ -283,7 +359,41 @@ export default function PassDownload() {
               </button>
             </div>
           </div>
-          {r.status === "active" && (
+          {r.status === "active" &&
+            photoUrl &&
+            frame &&
+            canvasSize &&
+            (!positionedImg || repositioning) && (
+              <>
+                <h2>Position your photo.</h2>
+                <p>
+                  This is the photograph you uploaded when registering — drag
+                  and zoom it into place. This is exactly how it will look on
+                  your pass.
+                </p>
+                <PhotoPositioner
+                  key={photoUrl}
+                  templateSrc={templateSrc}
+                  photoUrl={photoUrl}
+                  canvasWidth={canvasSize.w}
+                  canvasHeight={canvasSize.h}
+                  frame={frame}
+                  onConfirm={async (dataUrl) => {
+                    try {
+                      const img = await image(dataUrl);
+                      setPositionedImg(img);
+                      setRepositioning(false);
+                    } catch {
+                      setError(
+                        "Couldn't finish positioning your photo. Please retry.",
+                      );
+                    }
+                  }}
+                  onError={setError}
+                />
+              </>
+            )}
+          {r.status === "active" && positionedImg && !repositioning && (
             <div className="grid">
               <div>
                 {preview && (
@@ -293,6 +403,12 @@ export default function PassDownload() {
                     style={{ width: "100%", maxWidth: 430, borderRadius: 10 }}
                   />
                 )}
+                <button
+                  className="text-button"
+                  onClick={() => setRepositioning(true)}
+                >
+                  Reposition Photo
+                </button>
               </div>
               <div>
                 <h2>Your pass. Your moment.</h2>

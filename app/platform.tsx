@@ -935,31 +935,31 @@ function EventDetails({ event: e, all }: any) {
           )}
         </aside>
       </div>
-      {info?.tickets.some(
-        (t: any) => t.status === "active" && !t.soldOut && t.remaining > 0,
-      ) && (
-        <a className="mobile-ticket-cta" href="#tickets">
-          Get Your Pass —{" "}
-          {Math.min(
-            ...info.tickets
-              .filter(
-                (t: any) =>
-                  t.status === "active" && !t.soldOut && t.remaining > 0,
-              )
-              .map((t: any) => t.displayPrice),
-          ) === 0
-            ? "Free"
-            : "From PKR " +
-              Math.min(
-                ...info.tickets
-                  .filter(
-                    (t: any) =>
-                      t.status === "active" && !t.soldOut && t.remaining > 0,
-                  )
-                  .map((t: any) => t.displayPrice),
-              ).toLocaleString()}
-        </a>
-      )}
+      {(() => {
+        const bookable = (info?.tickets || [])
+          .filter(
+            (t: any) =>
+              t.status === "active" && !t.soldOut && t.remaining > 0,
+          )
+          .sort((a: any, b: any) => a.displayPrice - b.displayPrice);
+        const cheapest = bookable[0];
+        if (!cheapest) return null;
+        // Opens that specific ticket's dialog directly — no scroll-then-hope
+        // the visitor taps the right card, which is how a "free pass" tap
+        // could land on a paid tier if cards ever reorder.
+        return (
+          <button
+            type="button"
+            className="mobile-ticket-cta"
+            onClick={() => setTicket(cheapest)}
+          >
+            Get Your Pass —{" "}
+            {cheapest.displayPrice === 0
+              ? "Free"
+              : "From PKR " + cheapest.displayPrice.toLocaleString()}
+          </button>
+        );
+      })()}
       {all.speakers.filter((s: any) => s.event === e.id).length > 0 && (
         <>
           <h2>Meet the speakers.</h2>

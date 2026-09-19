@@ -2425,18 +2425,22 @@ label textarea {
   }
   .mobile-ticket-cta {
     display: block;
+    width: 100%;
     position: fixed;
     left: 16px;
     right: 16px;
     bottom: 14px;
     z-index: 40;
     padding: 16px 20px;
+    border: none;
     border-radius: 6px;
     background: #b9f464;
     color: #17200d;
     text-align: center;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 800;
+    cursor: pointer;
     box-shadow: 0 12px 45px #000a;
   }
 }

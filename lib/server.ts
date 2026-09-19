@@ -208,7 +208,7 @@ export async function passes(id: string) {
   return (
     await db()
       .prepare(
-        "SELECT t.*, (SELECT COUNT(*) FROM registrations r WHERE r.ticket_id=t.id AND r.status IN ('active','pending')) AS reserved FROM tickets t WHERE event_id=?",
+        "SELECT t.*, (SELECT COUNT(*) FROM registrations r WHERE r.ticket_id=t.id AND r.status IN ('active','pending')) AS reserved FROM tickets t WHERE event_id=? ORDER BY price ASC",
       )
       .bind(id)
       .all()

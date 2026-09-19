@@ -73,12 +73,18 @@ export function db() {
 }
 
 // --- Blob storage shim (Vercel Blob in place of Cloudflare R2) ----------
-// All access control happens in the route handlers before these are called,
-// so every object is stored private and always served back through the app.
-
+// Every object is uploaded with a fresh crypto.randomUUID() pathname and no
+// random suffix, so the resulting URL is only ever discoverable by someone
+// who already has that exact id — the app never displays the raw blob URL
+// itself, only ever proxying reads through its own access-controlled route.
+// That's the real access boundary here, the same as the app's other
+// unguessable tokens (access_hash, QR codes, etc.), because Vercel Blob
+// stores are provisioned as either public or private at the store level —
+// "private" access fails outright against a store that wasn't set up for
+// it, and there's no per-object override.
 const BUCKET = {
   async get(key: string) {
-    const result = await blobGet(key, { access: "private" });
+    const result = await blobGet(key, { access: "public" });
     if (!result || result.statusCode !== 200) return null;
     return { body: result.stream };
   },
@@ -88,7 +94,7 @@ const BUCKET = {
     opts: { httpMetadata: { contentType: string } },
   ) {
     await blobPut(key, Buffer.from(bytes), {
-      access: "private",
+      access: "public",
       contentType: opts.httpMetadata.contentType,
       addRandomSuffix: false,
       allowOverwrite: true,

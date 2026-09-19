@@ -1,6 +1,6 @@
 "use client";
 import { Fragment, useEffect, useState } from "react";
-import { ArrowUpRight, Menu, Mail } from "lucide-react";
+import { ArrowUpRight, Menu, Mail, Calendar, Clock, MapPin } from "lucide-react";
 import { googleSignIn } from "./auth-actions";
 import {
   Select,
@@ -501,7 +501,12 @@ export function Cards({ items, kind }: any) {
       {items.map((e: any) => (
         <a href={"/" + kind + "/" + e.slug} className="panel" key={e.id}>
           {e.banner ? (
-            <img className="card-img" src={e.banner} alt="" loading="lazy" />
+            <img
+              className="card-img card-img-contain"
+              src={e.banner}
+              alt=""
+              loading="lazy"
+            />
           ) : (
             <div className="mini-art">
               PAICONS <ArrowUpRight />
@@ -684,6 +689,20 @@ function Listing({ items, kind }: any) {
     </>
   );
 }
+function Bulleted({ text }: { text: string }) {
+  const lines = String(text || "")
+    .split("\n")
+    .map((line) => line.replace(/^[-•*]\s*/, "").trim())
+    .filter(Boolean);
+  if (!lines.length) return null;
+  return (
+    <ul className="event-list">
+      {lines.map((line, i) => (
+        <li key={i}>{line}</li>
+      ))}
+    </ul>
+  );
+}
 function EventDetails({ event: e, all }: any) {
   const [info, setInfo] = useState<any>(null),
     [ticket, setTicket] = useState<any>(null),
@@ -707,12 +726,9 @@ function EventDetails({ event: e, all }: any) {
         ← All {e.kind}
       </a>
       {e.banner && (
-        <img
-          className="card-img"
-          style={{ marginTop: 25, maxHeight: 450 }}
-          src={e.banner}
-          alt={e.title}
-        />
+        <div className="event-hero">
+          <img src={e.banner} alt={e.title} />
+        </div>
       )}
       {e.video && (
         <video
@@ -727,27 +743,58 @@ function EventDetails({ event: e, all }: any) {
         {e.category} · {e.city}
       </div>
       <h1>{e.title}</h1>
-      <div className="row">
-        <span className="pill">
-          {e.date} · {e.time}
-        </span>
-        <span className="pill">{e.venue}</span>
+      <div className="event-quickfacts">
+        <div className="event-quickfact">
+          <Calendar size={26} />
+          <div>
+            <strong>
+              {e.date
+                ? new Date(e.date + "T00:00:00").toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : "Date to be announced"}
+            </strong>
+            <span>Date</span>
+          </div>
+        </div>
+        {e.time && (
+          <div className="event-quickfact">
+            <Clock size={26} />
+            <div>
+              <strong>{e.time}</strong>
+              <span>Start time</span>
+            </div>
+          </div>
+        )}
+        <div className="event-quickfact">
+          <MapPin size={26} />
+          <div>
+            <strong>{e.venue || "Venue to be announced"}</strong>
+            <span>{e.city || "Venue"}</span>
+          </div>
+        </div>
       </div>
       <div className="grid">
         <div>
           <p style={{ whiteSpace: "pre-wrap" }}>{e.description}</p>
           {[
-            ["What you’ll take away", e.outcomes],
-            ["Agenda", e.agenda],
-            ["Curriculum", e.curriculum],
-            ["Requirements", e.requirements],
-            ["Certificate information", e.certificate],
-            ["Frequently asked questions", e.faqs],
-          ].map(([title, text]) =>
+            ["What you’ll take away", e.outcomes, true],
+            ["Agenda", e.agenda, true],
+            ["Curriculum", e.curriculum, false],
+            ["Requirements", e.requirements, false],
+            ["Certificate information", e.certificate, false],
+            ["Frequently asked questions", e.faqs, false],
+          ].map(([title, text, bulleted]: any) =>
             text ? (
-              <section key={title}>
-                <h2 style={{ fontSize: 27 }}>{title}</h2>
-                <p style={{ whiteSpace: "pre-wrap" }}>{text}</p>
+              <section className="event-section" key={title}>
+                <h2>{title}</h2>
+                {bulleted ? (
+                  <Bulleted text={text} />
+                ) : (
+                  <p style={{ whiteSpace: "pre-wrap" }}>{text}</p>
+                )}
               </section>
             ) : null,
           )}
@@ -814,12 +861,9 @@ function EventDetails({ event: e, all }: any) {
                       Speaker/Founder Access
                     </p>
                   )}
-                  <p
-                    className="ticket-benefits"
-                    style={{ whiteSpace: "pre-wrap" }}
-                  >
-                    {t.benefits}
-                  </p>
+                  <div className="ticket-benefits">
+                    <Bulleted text={t.benefits} />
+                  </div>
                   {e.showSocialProof !== false &&
                     !soldOut &&
                     t.remaining <= 12 && (

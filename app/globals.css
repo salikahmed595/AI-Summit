@@ -817,7 +817,8 @@ h2 {
 .event-carousel-card .mini-art {
   width: 100%;
   aspect-ratio: 16 / 10;
-  object-fit: cover;
+  object-fit: contain;
+  background: #10140c;
   display: block;
 }
 .event-carousel-body {
@@ -1512,6 +1513,87 @@ td {
   object-fit: cover;
   border-radius: 6px;
 }
+/* Event/course banners are designed poster graphics, not candid photos —
+   contain them in full instead of cropping into their text and logos. */
+.card-img-contain {
+  object-fit: contain;
+  aspect-ratio: 16 / 10;
+  background: #10140c;
+}
+
+/* Premium event-detail hero */
+.event-hero {
+  margin-top: 25px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #10140c;
+  border: 1px solid #2b3324;
+}
+.event-hero img {
+  width: 100%;
+  max-height: 480px;
+  object-fit: contain;
+  background: #10140c;
+  display: block;
+}
+.event-quickfacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 26px 0 10px;
+}
+.event-quickfact {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1 1 220px;
+  padding: 18px 22px;
+  background: #171c13;
+  border: 1px solid #333b2b;
+  border-radius: 12px;
+}
+.event-quickfact svg {
+  color: #b9f464;
+  flex-shrink: 0;
+}
+.event-quickfact strong {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #f4f7f0;
+}
+.event-quickfact span {
+  display: block;
+  margin-top: 3px;
+  color: #a8afa2;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.event-section {
+  margin-top: 38px;
+}
+.event-section h2 {
+  font-size: 24px;
+  margin-bottom: 14px;
+}
+.event-list {
+  margin: 0;
+  padding-left: 22px;
+  color: #c5ccc0;
+}
+.event-list li {
+  margin-bottom: 10px;
+  line-height: 1.55;
+}
+.ticket-benefits .event-list {
+  padding-left: 18px;
+}
+.ticket-benefits .event-list li {
+  margin-bottom: 7px;
+  font-size: 0.92rem;
+}
 .admin-menu {
   display: flex;
   gap: 8px;
@@ -1665,6 +1747,15 @@ td {
   }
   .events-carousel-controls {
     padding-right: 20px;
+  }
+  .event-quickfacts {
+    flex-direction: column;
+  }
+  .event-quickfact {
+    padding: 15px 18px;
+  }
+  .event-hero img {
+    max-height: 260px;
   }
   .ticker i {
     font-size: 14px;
@@ -1899,7 +1990,8 @@ td {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  background: #10140c;
 }
 .event-meta {
   color: #d5dccd;

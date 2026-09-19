@@ -1194,6 +1194,45 @@ footer > div:not(:first-child) {
   gap: 15px;
 }
 
+.pass-generator-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 560px) minmax(260px, 340px);
+  gap: 32px;
+  align-items: start;
+  margin-top: 28px;
+}
+.pass-generator-canvas {
+  position: relative;
+  display: inline-flex;
+  background: #191e15;
+  border: 1px solid #333b2b;
+  border-radius: 10px;
+  padding: 12px;
+}
+.pass-generator-canvas .canvas-container {
+  border-radius: 6px;
+  overflow: hidden;
+}
+.pass-generator-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 24px;
+}
+.pass-generator-controls input[type="range"] {
+  width: 100%;
+  margin-top: 8px;
+}
+@media (max-width: 900px) {
+  .pass-generator-layout {
+    grid-template-columns: 1fr;
+  }
+  .pass-generator-controls {
+    position: static;
+  }
+}
+
 .legal-content {
   max-width: 760px;
 }

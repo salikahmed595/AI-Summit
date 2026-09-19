@@ -16,6 +16,23 @@ function image(src: string): Promise<HTMLImageElement> {
     img.src = src;
   });
 }
+async function fetchPhotoBlob(id: string, key: string): Promise<Blob> {
+  let res: Response;
+  try {
+    res = await fetch("/api/paicon/file/" + id, {
+      headers: { "x-pass-key": key },
+    });
+  } catch {
+    // A raw browser "Failed to fetch" here only ever means the request
+    // never reached the server — dropped connection, offline, or a slow
+    // network — never that the photo doesn't exist.
+    throw new Error(
+      "Couldn't reach PAICONS to load your photograph. Check your connection and try again.",
+    );
+  }
+  if (!res.ok) throw new Error("Photograph unavailable");
+  return res.blob();
+}
 function fitted(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -94,11 +111,9 @@ export async function renderPass(
   if (!positionedBase) {
     // Fallback for when the visitor hasn't gone through the interactive
     // positioning step (or it's unavailable): the old fixed center-crop.
-    const photoResponse = await fetch("/api/paicon/file/" + r.photo, {
-      headers: { "x-pass-key": key },
-    });
-    if (!photoResponse.ok) throw new Error("Photograph unavailable");
-    const photoUrl = URL.createObjectURL(await photoResponse.blob());
+    const photoUrl = URL.createObjectURL(
+      await fetchPhotoBlob(r.photo, key),
+    );
     let photo: HTMLImageElement;
     try {
       photo = await image(photoUrl);
@@ -234,12 +249,9 @@ export default function PassDownload() {
           w = Math.round(img.width * scale);
           h = Math.round(img.height * scale);
         }
-        const res = await fetch(
-          "/api/paicon/file/" + data.registration.photo,
-          { headers: { "x-pass-key": key } },
+        objectUrl = URL.createObjectURL(
+          await fetchPhotoBlob(data.registration.photo, key),
         );
-        if (!res.ok) throw new Error("Photograph unavailable");
-        objectUrl = URL.createObjectURL(await res.blob());
         if (cancelled) return;
         setTemplateSrc(src);
         setCanvasSize({ w, h });

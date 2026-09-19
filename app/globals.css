@@ -1841,6 +1841,12 @@ td {
     margin: 18px 0 6px;
   }
   .event-quickfact {
+    /* In row direction (desktop) flex-basis: 220px sets a sensible min
+       width. In column direction (mobile) that same basis applies to
+       height instead, stretching each card to ~220px tall for no reason.
+       Pin it to auto-height, full width here instead. */
+    flex: none;
+    width: 100%;
     gap: 12px;
     padding: 13px 16px;
   }

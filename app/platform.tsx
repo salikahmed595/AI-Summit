@@ -295,24 +295,39 @@ export async function api(
   data?: unknown,
   headers?: Record<string, string>,
 ) {
-  const r = await fetch("/api/paicon/" + path, {
-    method: data === undefined ? "GET" : "POST",
-    headers: {
-      ...(data instanceof FormData
-        ? {}
-        : data === undefined
+  let r: Response;
+  try {
+    r = await fetch("/api/paicon/" + path, {
+      method: data === undefined ? "GET" : "POST",
+      headers: {
+        ...(data instanceof FormData
           ? {}
-          : { "Content-Type": "application/json" }),
-      ...headers,
-    },
-    body:
-      data === undefined
-        ? undefined
-        : data instanceof FormData
-          ? data
-          : JSON.stringify(data),
-  });
-  const d: any = await r.json();
+          : data === undefined
+            ? {}
+            : { "Content-Type": "application/json" }),
+        ...headers,
+      },
+      body:
+        data === undefined
+          ? undefined
+          : data instanceof FormData
+            ? data
+            : JSON.stringify(data),
+    });
+  } catch {
+    // The browser's own "Failed to fetch" only ever means the request never
+    // reached the server — a dropped connection, offline, or a slow mobile
+    // network timing out a large upload. It never means the server said no.
+    throw new Error(
+      "Couldn't reach PAICONS. Check your connection and try again.",
+    );
+  }
+  let d: any;
+  try {
+    d = await r.json();
+  } catch {
+    throw new Error("Unexpected response from the server. Please try again.");
+  }
   if (!r.ok) throw new Error(d.error || "Unable to complete this request");
   return d;
 }

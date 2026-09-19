@@ -468,6 +468,15 @@ export function Upload({
         }}
       />
       {busy && <span>Uploading…</span>}
+      <input
+        type="text"
+        placeholder="…or paste an image/video URL (e.g. /media/your-file.png)"
+        defaultValue={value && value.startsWith("/api/paicon/") ? "" : value}
+        onBlur={(e) => {
+          if (e.target.value) onChange(e.target.value);
+        }}
+        style={{ marginTop: 8 }}
+      />
       {value && accept.includes("video") ? (
         <video
           src={value}

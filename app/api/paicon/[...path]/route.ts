@@ -83,10 +83,15 @@ const detail = z.object({
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/)
     .default("#b9f464"),
-  photoX: z.coerce.number().min(0).max(800).default(80),
-  photoY: z.coerce.number().min(0).max(1000).default(330),
-  photoSize: z.coerce.number().min(100).max(600).default(300),
-  nameY: z.coerce.number().min(0).max(1200).default(710),
+  photoX: z.coerce.number().min(0).max(2000).default(80),
+  photoY: z.coerce.number().min(0).max(2000).default(330),
+  photoSize: z.coerce.number().min(100).max(1200).default(300),
+  photoShape: z.enum(["square", "circle"]).default("square"),
+  nameY: z.coerce.number().min(0).max(2000).default(710),
+  templateHasText: z.boolean().default(false),
+  qrX: z.coerce.number().min(0).max(2000).optional(),
+  qrY: z.coerce.number().min(0).max(2000).optional(),
+  qrSize: z.coerce.number().min(80).max(800).optional(),
   hero: short.default("Where Pakistan connects with AI."),
   about: txt.default(""),
   founderStory: txt.default(""),
@@ -527,6 +532,17 @@ async function route(req: Request, parts: string[]) {
         premium: z.boolean().default(false),
         saleStart: short.default(""),
         saleEnd: short.default(""),
+        // Optional per-ticket pass overrides — when unset, the pass
+        // renderer falls back to the event's own pass template settings.
+        template: short.default(""),
+        photoX: z.coerce.number().min(0).max(2000).optional(),
+        photoY: z.coerce.number().min(0).max(2000).optional(),
+        photoSize: z.coerce.number().min(100).max(1200).optional(),
+        photoShape: z.enum(["square", "circle"]).optional(),
+        templateHasText: z.boolean().optional(),
+        qrX: z.coerce.number().min(0).max(2000).optional(),
+        qrY: z.coerce.number().min(0).max(2000).optional(),
+        qrSize: z.coerce.number().min(80).max(800).optional(),
       })
       .parse(body);
     if (!(await eventById(t.eventId))) throw new Error("Event not found");
@@ -551,6 +567,15 @@ async function route(req: Request, parts: string[]) {
           premium: t.premium,
           saleStart: t.saleStart,
           saleEnd: t.saleEnd,
+          template: t.template,
+          photoX: t.photoX,
+          photoY: t.photoY,
+          photoSize: t.photoSize,
+          photoShape: t.photoShape,
+          templateHasText: t.templateHasText,
+          qrX: t.qrX,
+          qrY: t.qrY,
+          qrSize: t.qrSize,
         }),
       )
       .run();

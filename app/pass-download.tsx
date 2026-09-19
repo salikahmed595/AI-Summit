@@ -38,29 +38,45 @@ function fitted(
 }
 export async function renderPass(data: any, key: string, social = false) {
   const { event: e, registration: r, ticket: t } = data;
+  // Per-ticket pass settings win over the event's own defaults, so tiers
+  // like Visitor vs Premium can ship completely different artwork.
+  const templateSrc = t.template || e.template;
+  const photoShape = t.photoShape || e.photoShape || "square";
+  const skipBaseText = t.templateHasText ?? e.templateHasText ?? false;
   const c = document.createElement("canvas");
-  c.width = 1080;
-  c.height = 1350;
+  let template: HTMLImageElement | null = null;
+  if (templateSrc) template = await image(templateSrc);
+  // Match the canvas to the uploaded template's own aspect ratio instead of
+  // forcing every design into a fixed 1080x1350 frame (which would stretch
+  // and distort a square or differently-proportioned template).
+  if (template) {
+    const maxSide = 1350;
+    const scale = maxSide / Math.max(template.width, template.height);
+    c.width = Math.round(template.width * scale);
+    c.height = Math.round(template.height * scale);
+  } else {
+    c.width = 1080;
+    c.height = 1350;
+  }
   const ctx = c.getContext("2d")!;
   ctx.fillStyle = "#10170e";
-  ctx.fillRect(0, 0, 1080, 1350);
-  if (e.template) {
-    const template = await image(e.template);
-    ctx.drawImage(template, 0, 0, 1080, 1350);
-  }
+  ctx.fillRect(0, 0, c.width, c.height);
+  if (template) ctx.drawImage(template, 0, 0, c.width, c.height);
   const accent = e.accent || "#b9f464";
-  ctx.fillStyle = accent;
-  ctx.fillRect(0, 0, 1080, 12);
-  ctx.font = "bold 68px Arial";
-  ctx.fillText("PAICONS", 80, 115);
-  ctx.font = "20px Arial";
-  ctx.fillStyle = "#ced7c7";
-  ctx.fillText("Pakistan AI Collaboration & Opportunities Network", 80, 154);
-  ctx.fillStyle = accent;
-  ctx.font = "bold 25px Arial";
-  ctx.fillText(social ? "I’M ATTENDING" : t.name.toUpperCase(), 80, 235);
-  ctx.font = "bold 38px Arial";
-  fitted(ctx, e.title, 80, 292, 920, 38);
+  if (!skipBaseText) {
+    ctx.fillStyle = accent;
+    ctx.fillRect(0, 0, c.width, 12);
+    ctx.font = "bold 68px Arial";
+    ctx.fillText("PAICONS", 80, 115);
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "#ced7c7";
+    ctx.fillText("Pakistan AI Collaboration & Opportunities Network", 80, 154);
+    ctx.fillStyle = accent;
+    ctx.font = "bold 25px Arial";
+    ctx.fillText(social ? "I’M ATTENDING" : t.name.toUpperCase(), 80, 235);
+    ctx.font = "bold 38px Arial";
+    fitted(ctx, e.title, 80, 292, c.width - 160, 38);
+  }
   const photoResponse = await fetch("/api/paicon/file/" + r.photo, {
     headers: { "x-pass-key": key },
   });
@@ -72,13 +88,14 @@ export async function renderPass(data: any, key: string, social = false) {
   } finally {
     URL.revokeObjectURL(photoUrl);
   }
-  const x = Number(e.photoX ?? 80),
-    y = Number(e.photoY ?? 330),
-    size = Number(e.photoSize ?? 300);
+  const x = Number(t.photoX ?? e.photoX ?? 80),
+    y = Number(t.photoY ?? e.photoY ?? 330),
+    size = Number(t.photoSize ?? e.photoSize ?? 300);
   const crop = Math.min(photo.width, photo.height);
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(x, y, size, size, 12);
+  if (photoShape === "circle") ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+  else ctx.roundRect(x, y, size, size, 12);
   ctx.clip();
   ctx.drawImage(
     photo,
@@ -92,43 +109,58 @@ export async function renderPass(data: any, key: string, social = false) {
     size,
   );
   ctx.restore();
-  ctx.font = "bold 50px Arial";
-  fitted(ctx, r.name, 80, Number(e.nameY ?? 710), 920, 50);
-  ctx.font = "23px Arial";
-  ctx.fillStyle = "#b4c1aa";
-  ctx.fillText(
-    [r.role, r.organization].filter(Boolean).join(" · ").slice(0, 70),
-    80,
-    Number(e.nameY ?? 710) + 44,
-  );
-  ctx.font = "bold 26px Arial";
-  ctx.fillStyle = "#f4f5eb";
-  ctx.fillText(e.date + " · " + e.time, 80, 870);
-  ctx.font = "24px Arial";
-  fitted(ctx, e.venue + " · " + e.city, 80, 915, 650, 24);
+  if (!skipBaseText) {
+    ctx.font = "bold 50px Arial";
+    fitted(ctx, r.name, 80, Number(e.nameY ?? 710), c.width - 160, 50);
+    ctx.font = "23px Arial";
+    ctx.fillStyle = "#b4c1aa";
+    ctx.fillText(
+      [r.role, r.organization].filter(Boolean).join(" · ").slice(0, 70),
+      80,
+      Number(e.nameY ?? 710) + 44,
+    );
+    ctx.font = "bold 26px Arial";
+    ctx.fillStyle = "#f4f5eb";
+    ctx.fillText(e.date + " · " + e.time, 80, 870);
+    ctx.font = "24px Arial";
+    fitted(ctx, e.venue + " · " + e.city, 80, 915, 650, 24);
+  }
   if (!social) {
+    const qrSize = Number(t.qrSize ?? e.qrSize ?? 250);
+    const qrX = Number(t.qrX ?? e.qrX ?? c.width - qrSize - 80);
+    const qrY = Number(t.qrY ?? e.qrY ?? c.height - qrSize - 130);
     const q = document.createElement("canvas");
     await QRCode.toCanvas(q, data.origin + "/verify/" + r.qr, {
-      width: 250,
+      width: qrSize,
       margin: 3,
       errorCorrectionLevel: "M",
     });
-    ctx.drawImage(q, 750, 985, 250, 250);
-    ctx.font = "18px Arial";
-    ctx.fillStyle = "#b4c1aa";
-    ctx.fillText("TICKET ID", 80, 1050);
-    ctx.fillText(r.id, 80, 1085);
-    ctx.fillText("Present this QR code at the entrance.", 80, 1150);
-  } else {
+    // A light backing keeps the QR scannable regardless of how dark or busy
+    // the underlying template art is.
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.roundRect(qrX - 14, qrY - 14, qrSize + 28, qrSize + 28, 14);
+    ctx.fill();
+    ctx.drawImage(q, qrX, qrY, qrSize, qrSize);
+    if (!skipBaseText) {
+      ctx.font = "18px Arial";
+      ctx.fillStyle = "#b4c1aa";
+      ctx.fillText("TICKET ID", 80, 1050);
+      ctx.fillText(r.id, 80, 1085);
+      ctx.fillText("Present this QR code at the entrance.", 80, 1150);
+    }
+  } else if (!skipBaseText) {
     ctx.fillStyle = accent;
     ctx.font = "bold 45px Arial";
     ctx.fillText("See you there.", 80, 1090);
     ctx.font = "26px Arial";
     ctx.fillText("#PAICONS", 80, 1140);
   }
-  ctx.fillStyle = accent;
-  ctx.font = "bold 23px Arial";
-  ctx.fillText("LEARN. CONNECT. BUILD.", 80, 1270);
+  if (!skipBaseText) {
+    ctx.fillStyle = accent;
+    ctx.font = "bold 23px Arial";
+    ctx.fillText("LEARN. CONNECT. BUILD.", 80, 1270);
+  }
   return c;
 }
 export default function PassDownload() {
@@ -167,13 +199,22 @@ export default function PassDownload() {
         const { jsPDF } = await import("jspdf");
         const doc = new jsPDF({
           unit: "px",
-          format: [1080, 1350],
+          format: [canvas.width, canvas.height],
           hotfixes: ["px_scaling"],
           compress: true,
         });
         doc.setCreationDate(new Date(data.registration.created));
         doc.setFileId(data.registration.id.replaceAll("-", "").toUpperCase());
-        doc.addImage(png, "PNG", 0, 0, 1080, 1350, undefined, "NONE");
+        doc.addImage(
+          png,
+          "PNG",
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+          undefined,
+          "NONE",
+        );
         doc.save("PAICONS-pass.pdf");
       } else {
         const a = document.createElement("a");

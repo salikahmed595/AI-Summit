@@ -925,19 +925,44 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
             <p>
               The PAICONS layout is included. Upload an optional background and
               configure photo placement. All outputs use standard rendering.
+              A ticket can override any of this below to give a tier (e.g.
+              Visitor vs Premium) its own artwork.
             </p>
             <Upload
-              label="Pass background (1080 × 1350 recommended)"
+              label="Pass background (any size — the pass matches its aspect ratio)"
               value={form.template}
               onChange={set("template")}
             />
+            <label className="row">
+              <Checkbox
+                checked={!!form.templateHasText}
+                onCheckedChange={(v: boolean) => set("templateHasText")(v)}
+              />
+              <span>
+                Background already includes the title, date and venue text
+                (skip PAICONS' own text layout — only the photo and, on the
+                real pass, the QR code are drawn on top)
+              </span>
+            </label>
             <div className="grid">
+              <Choice
+                label="Photo shape"
+                value={form.photoShape || "square"}
+                onChange={set("photoShape")}
+                options={[
+                  { value: "square", label: "Rounded square" },
+                  { value: "circle", label: "Circle" },
+                ]}
+              />
               {[
                 ["accent", "Accent color", "color"],
                 ["photoX", "Photo left position", "number"],
                 ["photoY", "Photo top position", "number"],
                 ["photoSize", "Photo size", "number"],
                 ["nameY", "Attendee name position", "number"],
+                ["qrX", "QR code left position (blank = auto)", "number"],
+                ["qrY", "QR code top position (blank = auto)", "number"],
+                ["qrSize", "QR code size (blank = auto)", "number"],
               ].map(([k, l, t]) => (
                 <Field
                   key={k}
@@ -945,7 +970,7 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
                   type={t}
                   value={form[k]}
                   onChange={(v: string) =>
-                    set(k)(t === "number" ? Number(v) : v)
+                    set(k)(t === "number" ? (v === "" ? "" : Number(v)) : v)
                   }
                 />
               ))}
@@ -1296,6 +1321,53 @@ function TicketEditor({ eventId, initial }: any) {
           value={form.benefits}
           onChange={set("benefits")}
         />
+        <h3>Pass override for this ticket</h3>
+        <p>
+          Optional — leave blank to use the event's own pass template. Set
+          this to give this tier (e.g. Premium) its own background, photo
+          placement and QR position.
+        </p>
+        <Upload
+          label="Pass background for this ticket (any size)"
+          value={form.template}
+          onChange={set("template")}
+        />
+        <label className="row">
+          <Checkbox
+            checked={!!form.templateHasText}
+            onCheckedChange={(v: boolean) => set("templateHasText")(v)}
+          />
+          <span>
+            Background already includes the title, date and venue text
+          </span>
+        </label>
+        <div className="grid">
+          <Choice
+            label="Photo shape"
+            value={form.photoShape || ""}
+            onChange={set("photoShape")}
+            options={[
+              { value: "square", label: "Rounded square" },
+              { value: "circle", label: "Circle" },
+            ]}
+          />
+          {[
+            ["photoX", "Photo left position"],
+            ["photoY", "Photo top position"],
+            ["photoSize", "Photo size"],
+            ["qrX", "QR code left position"],
+            ["qrY", "QR code top position"],
+            ["qrSize", "QR code size"],
+          ].map(([k, l]) => (
+            <Field
+              key={k}
+              label={l + " (blank = event default)"}
+              type="number"
+              value={form[k] ?? ""}
+              onChange={(v: string) => set(k)(v === "" ? undefined : Number(v))}
+            />
+          ))}
+        </div>
         <p role="status">{error}</p>
         <button className="button" disabled={busy}>
           {busy ? "Saving…" : form.id ? "Update Ticket" : "Add Ticket"}

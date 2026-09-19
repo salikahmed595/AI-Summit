@@ -1487,6 +1487,93 @@ textarea {
   border: 1px dashed #3e4834;
   border-radius: 10px;
 }
+
+/* Registration form: clear numbered sections instead of one long list */
+.form-section {
+  margin: 28px 0;
+  padding-top: 24px;
+  border-top: 1px solid #2b3324;
+}
+.form-section:first-of-type {
+  margin-top: 20px;
+  padding-top: 0;
+  border-top: none;
+}
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  color: #f4f7f0;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+.form-section-title span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #b9f464;
+  color: #17200d;
+  font-size: 0.72rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* Registration form: a proper upload box with a live preview, not a bare
+   browser file input */
+.photo-field {
+  margin: 15px 0 7px;
+}
+.photo-field-label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.photo-field-box {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 4 / 3;
+  border: 1.5px dashed #4b5940;
+  border-radius: 10px;
+  background: #171c13;
+  overflow: hidden;
+  transition: border-color 0.25s;
+}
+.photo-field-box:hover {
+  border-color: #b9f464;
+}
+.photo-field-box input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.photo-field-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.photo-field-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  color: #a8afa2;
+  font-size: 0.78rem;
+  text-align: center;
+}
 table {
   width: 100%;
   font-size: 12px;
@@ -1750,9 +1837,22 @@ td {
   }
   .event-quickfacts {
     flex-direction: column;
+    gap: 10px;
+    margin: 18px 0 6px;
   }
   .event-quickfact {
-    padding: 15px 18px;
+    gap: 12px;
+    padding: 13px 16px;
+  }
+  .event-quickfact svg {
+    width: 20px;
+    height: 20px;
+  }
+  .event-quickfact strong {
+    font-size: 1rem;
+  }
+  .event-quickfact span {
+    font-size: 0.7rem;
   }
   .event-hero img {
     max-height: 260px;

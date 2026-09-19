@@ -352,6 +352,48 @@ export function Area({ label, value, onChange, ...rest }: any) {
     </label>
   );
 }
+function LocalPhotoField({
+  label,
+  required,
+  hint,
+  onChange,
+}: {
+  label: string;
+  required?: boolean;
+  hint?: string;
+  onChange: (file?: File) => void;
+}) {
+  const [preview, setPreview] = useState("");
+  return (
+    <label className="photo-field">
+      <span className="photo-field-label">
+        {label}
+        {required ? " *" : ""}
+      </span>
+      <span className="photo-field-box">
+        {preview ? (
+          <img src={preview} alt="" className="photo-field-preview" />
+        ) : (
+          <span className="photo-field-placeholder">
+            <ArrowUpRight size={18} style={{ transform: "rotate(-45deg)" }} />
+            Tap to choose a photo
+          </span>
+        )}
+        <input
+          type="file"
+          accept="image/jpeg,image/png"
+          required={required}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            onChange(f);
+            setPreview(f ? URL.createObjectURL(f) : "");
+          }}
+        />
+      </span>
+      {hint && <small>{hint}</small>}
+    </label>
+  );
+}
 export function Choice({ label, value, onChange, options }: any) {
   return (
     <label>
@@ -1035,46 +1077,51 @@ function Registration({ event, ticket, config }: any) {
           ? "Complete your details and submit proof of payment for manual review."
           : "Complete your details to receive your free pass."}
       </p>
-      {[
-        ["name", "Full name", "text"],
-        ["email", "Email", "email"],
-        ["whatsapp", "WhatsApp number", "tel"],
-      ].map(([k, l, t]) => (
-        <Field
-          key={k}
-          label={l}
-          type={t}
-          value={form[k]}
-          onChange={set(k)}
+      <div className="form-section">
+        <div className="form-section-title">
+          <span>1</span> Your details
+        </div>
+        {[
+          ["name", "Full name", "text"],
+          ["email", "Email", "email"],
+          ["whatsapp", "WhatsApp number", "tel"],
+        ].map(([k, l, t]) => (
+          <Field
+            key={k}
+            label={l}
+            type={t}
+            value={form[k]}
+            onChange={set(k)}
+            required
+            maxLength={254}
+          />
+        ))}
+        {(event.fields || []).map((k: string) => (
+          <Field
+            key={k}
+            label={k.charAt(0).toUpperCase() + k.slice(1)}
+            value={form[k]}
+            onChange={set(k)}
+            maxLength={300}
+          />
+        ))}
+      </div>
+      <div className="form-section">
+        <div className="form-section-title">
+          <span>2</span> Your photo
+        </div>
+        <LocalPhotoField
+          label="Your photograph"
           required
-          maxLength={254}
+          hint="JPEG or PNG, up to 5 MB. Your actual photograph will appear on your pass."
+          onChange={setPhoto}
         />
-      ))}
-      {(event.fields || []).map((k: string) => (
-        <Field
-          key={k}
-          label={k.charAt(0).toUpperCase() + k.slice(1)}
-          value={form[k]}
-          onChange={set(k)}
-          maxLength={300}
-        />
-      ))}
-      <label>
-        Your photograph *
-        <input
-          type="file"
-          accept="image/jpeg,image/png"
-          required
-          onChange={(e) => setPhoto(e.target.files?.[0])}
-        />
-        <small>
-          JPEG or PNG, up to 5 MB. Your actual photograph will appear on your
-          pass.
-        </small>
-      </label>
+      </div>
       {ticket.displayPrice > 0 && (
-        <>
-          <h3>Payment · PKR {ticket.displayPrice.toLocaleString()}</h3>
+        <div className="form-section">
+          <div className="form-section-title">
+            <span>3</span> Payment · PKR {ticket.displayPrice.toLocaleString()}
+          </div>
           {config.payment ? (
             <p style={{ whiteSpace: "pre-wrap" }}>{config.payment}</p>
           ) : (
@@ -1094,19 +1141,15 @@ function Registration({ event, ticket, config }: any) {
             onChange={set("reference")}
             required
           />
-          <label>
-            Payment receipt *
-            <input
-              type="file"
-              accept="image/jpeg,image/png"
-              required
-              onChange={(e) => setReceipt(e.target.files?.[0])}
-            />
-          </label>
+          <LocalPhotoField
+            label="Payment receipt"
+            required
+            onChange={setReceipt}
+          />
           <p>
             Your pass is issued after PAICONS manually verifies the payment.
           </p>
-        </>
+        </div>
       )}
       <label className="row">
         <Checkbox

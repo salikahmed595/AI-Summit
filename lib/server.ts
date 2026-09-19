@@ -157,7 +157,7 @@ export async function rate(req: Request, scope: string, max = 20) {
   const key = await hash(ip + scope + Math.floor(Date.now() / 3600000));
   const row = await db()
     .prepare(
-      "INSERT INTO limits(key,count,expires) VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1 RETURNING count",
+      "INSERT INTO limits(key,count,expires) VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=limits.count+1 RETURNING count",
     )
     .bind(key, Date.now() + 3600000)
     .first<{ count: number }>();

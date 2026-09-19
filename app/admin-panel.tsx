@@ -1184,10 +1184,29 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               </button>
             </>
           ) : (
-            <TicketEditor
-              eventId={savedId}
-              initial={data.tickets.filter((t: any) => t.event_id === savedId)}
-            />
+            <>
+              <TicketEditor
+                eventId={savedId}
+                initial={data.tickets.filter((t: any) => t.event_id === savedId)}
+              />
+              {form.status !== "published" && (
+                <div className="panel" style={{ marginTop: 16 }}>
+                  <strong>This event is still a draft.</strong>
+                  <p>
+                    It won't appear on the website — including this homepage
+                    carousel and the Events page — until you publish it.
+                    Adding tickets does not publish it automatically.
+                  </p>
+                  <button
+                    className="button"
+                    disabled={busy}
+                    onClick={() => save("published")}
+                  >
+                    {busy ? "Publishing…" : "Publish This Event"}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       )}

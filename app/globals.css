@@ -779,6 +779,77 @@ h2 {
   letter-spacing: 1.6px;
 }
 
+/* Slidable upcoming-events carousel on the homepage */
+.events-carousel-window {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  cursor: grab;
+}
+.events-carousel-window::-webkit-scrollbar {
+  display: none;
+}
+.events-carousel-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  padding: 4px 5.5% 14px;
+}
+.event-carousel-card {
+  display: block;
+  width: clamp(260px, 26vw, 360px);
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  background: #191e15;
+  border: 1px solid #333b2b;
+  border-radius: 10px;
+  overflow: hidden;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s;
+}
+.event-carousel-card:hover {
+  transform: translateY(-6px);
+  border-color: #b9f464;
+}
+.event-carousel-card img,
+.event-carousel-card .mini-art {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  display: block;
+}
+.event-carousel-body {
+  padding: 18px 20px 22px;
+}
+.event-carousel-body h3 {
+  font-size: 22px;
+  margin: 8px 0;
+}
+.events-carousel-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: -6px;
+  padding-right: 5.5%;
+}
+.events-carousel-controls button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #333b2b;
+  border-radius: 50%;
+  color: #e5eade;
+  background: transparent;
+}
+.events-carousel-controls button:hover {
+  border-color: #b9f464;
+  color: #b9f464;
+}
+
 @keyframes status-pulse {
   60%,
   100% {
@@ -1585,6 +1656,15 @@ td {
   }
   .reels-foot {
     padding-inline: 20px;
+  }
+  .events-carousel-track {
+    padding-inline: 20px;
+  }
+  .event-carousel-card {
+    width: min(82vw, 320px);
+  }
+  .events-carousel-controls {
+    padding-right: 20px;
   }
   .ticker i {
     font-size: 14px;

@@ -1681,6 +1681,77 @@ td {
   margin-bottom: 7px;
   font-size: 0.92rem;
 }
+
+/* Collapsible event sections and ticket details (native <details>) */
+.event-section.event-accordion {
+  margin-top: 0;
+  border-bottom: 1px solid #2b3324;
+}
+details.event-accordion:first-of-type {
+  margin-top: 28px;
+  border-top: 1px solid #2b3324;
+}
+.event-accordion summary,
+.ticket-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+.event-accordion summary::-webkit-details-marker,
+.ticket-summary::-webkit-details-marker {
+  display: none;
+}
+.event-accordion summary {
+  padding: 18px 0;
+}
+.event-accordion summary h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.event-accordion summary::after,
+.ticket-summary::after {
+  content: "";
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  margin: -4px 4px 0 0;
+  border-right: 2px solid #b9f464;
+  border-bottom: 2px solid #b9f464;
+  transform: rotate(45deg);
+  transition:
+    transform 0.25s ease,
+    margin 0.25s ease;
+}
+.event-accordion[open] summary::after,
+.ticket-accordion[open] .ticket-summary::after {
+  margin-top: 4px;
+  transform: rotate(-135deg);
+}
+.event-accordion summary:focus-visible,
+.ticket-summary:focus-visible {
+  outline: 2px solid #b9f464;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.event-accordion-body {
+  padding: 0 0 22px;
+}
+.ticket-card .ticket-summary h3 {
+  flex: 1;
+  margin: 0;
+}
+.ticket-card .ticket-summary strong {
+  white-space: nowrap;
+}
+.ticket-accordion {
+  margin-bottom: 14px;
+}
+.ticket-details {
+  margin-top: 14px;
+}
 .admin-menu {
   display: flex;
   gap: 8px;
@@ -2448,5 +2519,66 @@ label textarea {
     font-weight: 800;
     cursor: pointer;
     box-shadow: 0 12px 45px #000a;
+  }
+}
+
+/* Homepage intro band: what PAICONS is, right under the hero */
+.intro-band {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  padding-top: 70px;
+  padding-bottom: 10px;
+}
+.intro-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 40px 38px;
+  background: linear-gradient(160deg, #191e15, #11150e);
+  border: 1px solid #2b3324;
+  border-radius: 16px;
+}
+.intro-card h2 {
+  margin: 0 0 22px;
+  font-size: clamp(28px, 3vw, 40px);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.intro-card p {
+  max-width: 520px;
+  margin: 0 0 16px;
+  color: #c5ccc0;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.intro-card strong {
+  color: #f4f7f0;
+}
+.intro-card .intro-tagline {
+  margin: 4px 0 28px;
+  color: #b9f464;
+  font-size: 16px;
+  font-weight: 700;
+}
+.intro-card .button,
+.intro-card .text-button {
+  margin-top: auto;
+}
+@media (max-width: 900px) {
+  .intro-band {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .intro-band {
+    gap: 18px;
+    padding-top: 44px;
+  }
+  .intro-card {
+    padding: 28px 22px;
+  }
+  .intro-card p {
+    font-size: 14px;
   }
 }

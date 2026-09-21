@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import PassDownload from "./pass-download";
+import { formatTime12 } from "./format-time";
 import Admin from "./admin-panel";
 
 function InstagramIcon({ size = 22 }: { size?: number }) {
@@ -574,7 +575,7 @@ export function Cards({ items, kind }: any) {
           </div>
           <h2 style={{ fontSize: 28 }}>{e.title}</h2>
           <p>
-            {e.date} {e.time && " · " + e.time}
+            {e.date} {e.time && " · " + formatTime12(e.time)}
             <br />
             {kind === "courses"
               ? `${e.instructor} · ${e.duration} · ${e.level}`
@@ -820,8 +821,11 @@ function EventDetails({ event: e, all }: any) {
           <div className="event-quickfact">
             <Clock size={26} />
             <div>
-              <strong>{e.time}</strong>
-              <span>Start time</span>
+              <strong>
+                {formatTime12(e.time)}
+                {e.end ? ` – ${formatTime12(e.end)}` : ""}
+              </strong>
+              <span>{e.end ? "Time" : "Start time"}</span>
             </div>
           </div>
         )}
@@ -845,14 +849,18 @@ function EventDetails({ event: e, all }: any) {
             ["Frequently asked questions", e.faqs, false],
           ].map(([title, text, bulleted]: any) =>
             text ? (
-              <section className="event-section" key={title}>
-                <h2>{title}</h2>
-                {bulleted ? (
-                  <Bulleted text={text} />
-                ) : (
-                  <p style={{ whiteSpace: "pre-wrap" }}>{text}</p>
-                )}
-              </section>
+              <details className="event-section event-accordion" key={title}>
+                <summary>
+                  <h2>{title}</h2>
+                </summary>
+                <div className="event-accordion-body">
+                  {bulleted ? (
+                    <Bulleted text={text} />
+                  ) : (
+                    <p style={{ whiteSpace: "pre-wrap" }}>{text}</p>
+                  )}
+                </div>
+              </details>
             ) : null,
           )}
           {e.kind === "courses" && (
@@ -900,27 +908,28 @@ function EventDetails({ event: e, all }: any) {
                   {premium && (
                     <span className="premium-kicker">PREMIUM EXPERIENCE</span>
                   )}
-                  <div
-                    className="row"
-                    style={{ justifyContent: "space-between" }}
-                  >
-                    <h3>{t.name}</h3>
-                    <strong>
-                      {t.displayPrice === 0
-                        ? "FREE"
-                        : "PKR " + t.displayPrice.toLocaleString()}
-                    </strong>
-                  </div>
-                  <p>{t.description}</p>
-                  {premium && (
-                    <p className="value-line">
-                      Priority Access · Premium Seating · Exclusive Networking ·
-                      Speaker/Founder Access
-                    </p>
-                  )}
-                  <div className="ticket-benefits">
-                    <Bulleted text={t.benefits} />
-                  </div>
+                  <details className="ticket-accordion">
+                    <summary className="ticket-summary">
+                      <h3>{t.name}</h3>
+                      <strong>
+                        {t.displayPrice === 0
+                          ? "FREE"
+                          : "PKR " + t.displayPrice.toLocaleString()}
+                      </strong>
+                    </summary>
+                    <div className="ticket-details">
+                      <p>{t.description}</p>
+                      {premium && (
+                        <p className="value-line">
+                          Priority Access · Premium Seating · Exclusive
+                          Networking · Speaker/Founder Access
+                        </p>
+                      )}
+                      <div className="ticket-benefits">
+                        <Bulleted text={t.benefits} />
+                      </div>
+                    </div>
+                  </details>
                   {e.showSocialProof !== false &&
                     !soldOut &&
                     t.remaining <= 12 && (

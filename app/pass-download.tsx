@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import QRCode from "qrcode";
 import { api } from "./platform";
 import PhotoPositioner, { type PhotoFrame } from "./photo-positioner";
+import { formatTime12 } from "./format-time";
 function image(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -58,8 +58,7 @@ function fitted(
 // produces `positionedBase`: the template and the visitor's own-positioned
 // photo already flattened into one image at the exact export resolution.
 // When it's supplied, this skips its own photo fetch/center-crop entirely
-// and just draws that instead — text and the QR code still go on top the
-// same as always.
+// and just draws that instead — text still goes on top the same as always.
 export async function renderPass(
   data: any,
   key: string,
@@ -155,40 +154,26 @@ export async function renderPass(
     );
     ctx.font = "bold 26px Arial";
     ctx.fillStyle = "#f4f5eb";
-    ctx.fillText(e.date + " · " + e.time, 80, 870);
+    ctx.fillText(e.date + " · " + formatTime12(e.time), 80, 870);
     ctx.font = "24px Arial";
     fitted(ctx, e.venue + " · " + e.city, 80, 915, 650, 24);
   }
-  if (!social) {
-    const qrSize = Number(t.qrSize ?? e.qrSize ?? 250);
-    const qrX = Number(t.qrX ?? e.qrX ?? c.width - qrSize - 80);
-    const qrY = Number(t.qrY ?? e.qrY ?? c.height - qrSize - 130);
-    const q = document.createElement("canvas");
-    await QRCode.toCanvas(q, data.origin + "/verify/" + r.qr, {
-      width: qrSize,
-      margin: 3,
-      errorCorrectionLevel: "M",
-    });
-    // A light backing keeps the QR scannable regardless of how dark or busy
-    // the underlying template art is.
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.roundRect(qrX - 14, qrY - 14, qrSize + 28, qrSize + 28, 14);
-    ctx.fill();
-    ctx.drawImage(q, qrX, qrY, qrSize, qrSize);
-    if (!skipBaseText) {
+  // No QR code on the pass: the artwork already fills the canvas (a QR box
+  // sat right over the venue text), and passes aren't scanned at the door.
+  if (!skipBaseText) {
+    if (social) {
+      ctx.fillStyle = accent;
+      ctx.font = "bold 45px Arial";
+      ctx.fillText("See you there.", 80, 1090);
+      ctx.font = "26px Arial";
+      ctx.fillText("#PAICONS", 80, 1140);
+    } else {
       ctx.font = "18px Arial";
       ctx.fillStyle = "#b4c1aa";
       ctx.fillText("TICKET ID", 80, 1050);
       ctx.fillText(r.id, 80, 1085);
-      ctx.fillText("Present this QR code at the entrance.", 80, 1150);
+      ctx.fillText("Show this pass at the entrance.", 80, 1150);
     }
-  } else if (!skipBaseText) {
-    ctx.fillStyle = accent;
-    ctx.font = "bold 45px Arial";
-    ctx.fillText("See you there.", 80, 1090);
-    ctx.font = "26px Arial";
-    ctx.fillText("#PAICONS", 80, 1140);
   }
   if (!skipBaseText) {
     ctx.fillStyle = accent;
@@ -346,7 +331,7 @@ export default function PassDownload() {
                   ? "Your payment was not approved. Please contact PAICONS for assistance."
                   : r.status === "cancelled"
                     ? "This ticket has been cancelled. Contact PAICONS for assistance."
-                    : "Your pass is ready. Present its QR code at the event entrance."}
+                    : "Your pass is ready. Show it at the event entrance."}
             </p>
             <p>
               Keep this private link safe. It is required to return to your

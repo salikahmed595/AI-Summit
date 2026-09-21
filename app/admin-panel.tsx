@@ -940,8 +940,7 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               />
               <span>
                 Background already includes the title, date and venue text
-                (skip PAICONS' own text layout — only the photo and, on the
-                real pass, the QR code are drawn on top)
+                (skip PAICONS' own text layout — only the photo is drawn on top)
               </span>
             </label>
             <div className="grid">
@@ -960,9 +959,6 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
                 ["photoY", "Photo top position", "number"],
                 ["photoSize", "Photo size", "number"],
                 ["nameY", "Attendee name position", "number"],
-                ["qrX", "QR code left position (blank = auto)", "number"],
-                ["qrY", "QR code top position (blank = auto)", "number"],
-                ["qrSize", "QR code size (blank = auto)", "number"],
               ].map(([k, l, t]) => (
                 <Field
                   key={k}
@@ -1343,8 +1339,8 @@ function TicketEditor({ eventId, initial }: any) {
         <h3>Pass override for this ticket</h3>
         <p>
           Optional — leave blank to use the event's own pass template. Set
-          this to give this tier (e.g. Premium) its own background, photo
-          placement and QR position.
+          this to give this tier (e.g. Premium) its own background and
+          photo placement.
         </p>
         <Upload
           label="Pass background for this ticket (any size)"
@@ -1374,9 +1370,6 @@ function TicketEditor({ eventId, initial }: any) {
             ["photoX", "Photo left position"],
             ["photoY", "Photo top position"],
             ["photoSize", "Photo size"],
-            ["qrX", "QR code left position"],
-            ["qrY", "QR code top position"],
-            ["qrSize", "QR code size"],
           ].map(([k, l]) => (
             <Field
               key={k}

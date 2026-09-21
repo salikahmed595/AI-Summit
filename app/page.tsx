@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { HomeContent } from "./home-live";
 import { CommunityPopup, PremiumMotion } from "./premium-home";
@@ -7,7 +8,19 @@ import { WhatIsPaicons, LearnConnectBuild } from "./brand-story";
 export default function Home() {
   return <><PremiumMotion /><Header /><main>
     <section className="hero hero-single"><div className="hero-copy"><div className="eyebrow"><span className="dot" /> PAKISTAN'S AI COMMUNITY. TOGETHER.</div><h1>Building Pakistan&apos;s AI future <em>together.</em></h1><p className="intro">PAICONS brings Pakistan&apos;s students, builders and businesses together to learn, connect and use AI.</p><div className="actions"><a className="button" href="#upcoming">Explore Upcoming Events <ArrowUpRight size={18} /></a><a className="text-button" href="/membership">Join the Community <ArrowUpRight size={18} /></a></div><div className="hero-foot"><span>SCROLL TO EXPLORE ↓</span></div></div></section>
-    <div className="ticker"><span>AI & INNOVATION</span><i>✳</i><span>MEANINGFUL CONNECTIONS</span><i>✳</i><span>REAL OPPORTUNITIES</span><i>✳</i><span>BUILT IN PAKISTAN</span><i>✳</i></div>
+    <div className="ticker" aria-label="AI & innovation, meaningful connections, real opportunities, built in Pakistan">
+      <div className="ticker-track" aria-hidden="true">
+        {[0, 1].map((g) => (
+          <div className="ticker-group" key={g}>
+            {[0, 1, 2].map((r) => (
+              <Fragment key={r}>
+                <span>AI &amp; INNOVATION</span><i>✳</i><span>MEANINGFUL CONNECTIONS</span><i>✳</i><span>REAL OPPORTUNITIES</span><i>✳</i><span>BUILT IN PAKISTAN</span><i>✳</i>
+              </Fragment>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
     <WhatIsPaicons />
     <LearnConnectBuild />
     <HomeContent />

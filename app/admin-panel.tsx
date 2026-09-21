@@ -1225,8 +1225,53 @@ function TicketEditor({ eventId, initial }: any) {
     [busy, setBusy] = useState(false);
   const set = (k: string) => (v: any) =>
     setForm((p: any) => ({ ...p, [k]: v }));
+  const preset = (kind: "free" | "premium") =>
+    setForm(
+      kind === "free"
+        ? {
+            name: "Visitor Pass",
+            price: 0,
+            capacity: 400,
+            status: "active",
+            earlyBirdPrice: 0,
+            earlyBirdDeadline: "",
+            soldOut: false,
+            premium: false,
+            description:
+              "Free entry. Register with your details and photo to receive your digital pass.",
+            benefits:
+              "Full event access\nAll talks and demos\nNetworking access\nDigital pass + social card",
+          }
+        : {
+            name: "Premium Pass",
+            price: "",
+            capacity: 100,
+            status: "active",
+            earlyBirdPrice: 0,
+            earlyBirdDeadline: "",
+            soldOut: false,
+            premium: true,
+            description:
+              "The complete experience, with priority access and closer time with speakers.",
+            benefits:
+              "Includes all Visitor Pass benefits, plus:\nPriority access\nPremium seating\nExclusive networking\nSpeaker and founder access",
+          },
+    );
   return (
     <>
+      <div className="row">
+        <span className="muted">Quick start:</span>
+        <button type="button" className="pill" onClick={() => preset("free")}>
+          + Free pass
+        </button>
+        <button
+          type="button"
+          className="pill"
+          onClick={() => preset("premium")}
+        >
+          + Premium pass
+        </button>
+      </div>
       <div className="row">
         {tickets.map((t: any) => (
           <button className="pill" key={t.id} onClick={() => setForm(t)}>

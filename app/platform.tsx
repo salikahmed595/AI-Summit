@@ -747,18 +747,44 @@ function Listing({ items, kind }: any) {
     </>
   );
 }
-function Bulleted({ text }: { text: string }) {
+function Bulleted({ text, checks }: { text: string; checks?: boolean }) {
   const lines = String(text || "")
     .split("\n")
     .map((line) => line.replace(/^[-•*]\s*/, "").trim())
     .filter(Boolean);
   if (!lines.length) return null;
   return (
-    <ul className="event-list">
+    <ul className={checks ? "event-list checks" : "event-list"}>
       {lines.map((line, i) => (
-        <li key={i}>{line}</li>
+        <li
+          key={i}
+          className={checks && line.endsWith(":") ? "event-list-head" : undefined}
+        >
+          {checks && line.endsWith(":") ? line.slice(0, -1) : line}
+        </li>
       ))}
     </ul>
+  );
+}
+// Long ticket descriptions collapse to a short lead with "Read more", so a
+// tier reads as a quick pitch first and the detail only on request.
+function ReadMore({ text, limit = 150 }: { text: string; limit?: number }) {
+  const [open, setOpen] = useState(false);
+  const clean = String(text || "").trim();
+  if (!clean) return null;
+  if (clean.length <= limit) return <p className="ticket-desc">{clean}</p>;
+  const lead = clean.slice(0, limit).replace(/\s+\S*$/, "") + "…";
+  return (
+    <p className="ticket-desc">
+      {open ? clean : lead}{" "}
+      <button
+        type="button"
+        className="read-more"
+        onClick={() => setOpen(!open)}
+      >
+        {open ? "Show less" : "Read more"}
+      </button>
+    </p>
   );
 }
 function EventDetails({ event: e, all }: any) {
@@ -918,15 +944,21 @@ function EventDetails({ event: e, all }: any) {
                       </strong>
                     </summary>
                     <div className="ticket-details">
-                      <p>{t.description}</p>
+                      <ReadMore text={t.description} />
                       {premium && (
-                        <p className="value-line">
-                          Priority Access · Premium Seating · Exclusive
-                          Networking · Speaker/Founder Access
-                        </p>
+                        <ul className="value-chips">
+                          {[
+                            "Priority Access",
+                            "Premium Seating",
+                            "Exclusive Networking",
+                            "Speaker/Founder Access",
+                          ].map((chip) => (
+                            <li key={chip}>{chip}</li>
+                          ))}
+                        </ul>
                       )}
                       <div className="ticket-benefits">
-                        <Bulleted text={t.benefits} />
+                        <Bulleted text={t.benefits} checks />
                       </div>
                     </div>
                   </details>
@@ -965,23 +997,35 @@ function EventDetails({ event: e, all }: any) {
             (t: any) =>
               t.status === "active" && !t.soldOut && t.remaining > 0,
           )
-          .sort((a: any, b: any) => a.displayPrice - b.displayPrice);
-        const cheapest = bookable[0];
-        if (!cheapest) return null;
-        // Opens that specific ticket's dialog directly — no scroll-then-hope
-        // the visitor taps the right card, which is how a "free pass" tap
-        // could land on a paid tier if cards ever reorder.
+          .sort((a: any, b: any) => a.displayPrice - b.displayPrice)
+          .slice(0, 3);
+        if (!bookable.length) return null;
+        // One button per pass tier, each opening its own registration, so the
+        // bar never markets only one tier (e.g. only the free pass).
         return (
-          <button
-            type="button"
+          <div
             className="mobile-ticket-cta"
-            onClick={() => setTicket(cheapest)}
+            role="group"
+            aria-label="Get your pass"
           >
-            Get Your Pass —{" "}
-            {cheapest.displayPrice === 0
-              ? "Free"
-              : "From PKR " + cheapest.displayPrice.toLocaleString()}
-          </button>
+            {bookable.map((t: any) => {
+              const free = t.displayPrice === 0;
+              const premium = t.premium || /vip|premium/i.test(t.name);
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`mtc-btn ${premium ? "mtc-premium" : "mtc-free"}`}
+                  onClick={() => setTicket(t)}
+                >
+                  <b>{free ? "Free Pass" : premium ? "Premium Pass" : t.name}</b>
+                  <small>
+                    {free ? "Free" : "PKR " + t.displayPrice.toLocaleString()}
+                  </small>
+                </button>
+              );
+            })}
+          </div>
         );
       })()}
       {all.speakers.filter((s: any) => s.event === e.id).length > 0 && (

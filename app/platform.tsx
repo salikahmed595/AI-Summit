@@ -19,6 +19,8 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import PassDownload from "./pass-download";
 import { formatTime12 } from "./format-time";
+import { cleanDescription, mapsHref } from "./event-text";
+import { EventMap, OrganizerCard } from "./event-map";
 import Admin from "./admin-panel";
 
 function InstagramIcon({ size = 22 }: { size?: number }) {
@@ -865,17 +867,23 @@ function EventDetails({ event: e, all }: any) {
       </div>
       <div className="grid">
         <div>
-          <p style={{ whiteSpace: "pre-wrap" }}>{e.description}</p>
           {[
-            ["What you’ll take away", e.outcomes, true],
-            ["Agenda", e.agenda, true],
-            ["Curriculum", e.curriculum, false],
-            ["Requirements", e.requirements, false],
-            ["Certificate information", e.certificate, false],
-            ["Frequently asked questions", e.faqs, false],
-          ].map(([title, text, bulleted]: any) =>
+            ["About this event", cleanDescription(e.description), false, true],
+            ["What you’ll take away", e.outcomes, true, false],
+            ["Agenda", e.agenda, true, false],
+            ["Curriculum", e.curriculum, false, false],
+            ["Requirements", e.requirements, false, false],
+            ["Certificate information", e.certificate, false, false],
+            ["Frequently asked questions", e.faqs, false, false],
+            ["Payment & cancellation", e.cancellation, false, false],
+            ["From the community", e.testimonials, false, false],
+          ].map(([title, text, bulleted, open]: any) =>
             text ? (
-              <details className="event-section event-accordion" key={title}>
+              <details
+                className="event-section event-accordion"
+                key={title}
+                open={open || undefined}
+              >
                 <summary>
                   <h2>{title}</h2>
                 </summary>
@@ -894,28 +902,18 @@ function EventDetails({ event: e, all }: any) {
               {e.instructor} · {e.duration} · {e.format} · {e.level}
             </p>
           )}
-          {e.organizer && (
-            <p>
-              <strong>Organized by:</strong> {e.organizer}
-            </p>
-          )}
-          {e.address && <p>{e.address}</p>}
-          {/^https:\/\//.test(e.mapUrl || "") && (
-            <a href={e.mapUrl} target="_blank" rel="noreferrer">
-              View venue map ↗
-            </a>
-          )}
-          {e.cancellation && (
-            <section>
-              <h2 style={{ fontSize: 27 }}>Payment & cancellation</h2>
-              <p style={{ whiteSpace: "pre-wrap" }}>{e.cancellation}</p>
-            </section>
-          )}
-          {e.testimonials && (
-            <section>
-              <h2 style={{ fontSize: 27 }}>From the community</h2>
-              <p style={{ whiteSpace: "pre-wrap" }}>{e.testimonials}</p>
-            </section>
+          {(mapsHref(e) || e.organizer) && (
+            <div className="event-place">
+              {mapsHref(e) && (
+                <EventMap
+                  href={mapsHref(e)}
+                  venue={e.venue || e.city || "Event location"}
+                  address={e.address}
+                  city={e.city}
+                />
+              )}
+              {e.organizer && <OrganizerCard organizer={e.organizer} />}
+            </div>
           )}
         </div>
         <aside id="tickets">

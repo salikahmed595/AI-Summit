@@ -1,6 +1,7 @@
 import { requireSiteUser } from "@/app/site-auth";
 import { googleSignIn, googleSignOut } from "@/app/auth-actions";
 import { identity, content, runtime } from "@/lib/server";
+import { cleanDescription } from "@/app/event-text";
 import Platform from "@/app/platform";
 import { notFound } from "next/navigation";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,8 @@ export async function generateMetadata({
       );
       if (record) {
         title = record.seoTitle || record.title;
-        description = record.seoDescription || record.description.slice(0, 160);
+        description = record.seoDescription ||
+          cleanDescription(record.description).slice(0, 160);
         if (record.banner) image = new URL(record.banner, base).href;
       }
     }
@@ -117,7 +119,7 @@ export default async function Page({
               "@context": "https://schema.org",
               "@type": "Event",
               name: e.title,
-              description: e.description,
+              description: cleanDescription(e.description),
               startDate: e.date + "T" + e.time + ":00+05:00",
               eventStatus: "https://schema.org/EventScheduled",
               eventAttendanceMode:
@@ -137,7 +139,7 @@ export default async function Page({
               "@context": "https://schema.org",
               "@type": "Course",
               name: e.title,
-              description: e.description,
+              description: cleanDescription(e.description),
               provider: { "@type": "Organization", name: "PAICONS" },
             };
     } else notFound();

@@ -3379,3 +3379,333 @@ label textarea {
   color: #2f4a12;
   opacity: 1;
 }
+
+/* ------------------------------------------------------------------
+   Event page: interactive 3D map card + "Organized by" brand card
+   ------------------------------------------------------------------ */
+.event-place {
+  display: grid;
+  gap: 18px;
+  margin-top: 40px;
+}
+.emap {
+  --rx: 56;
+  --rz: -32;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #2b3324;
+  border-radius: 18px;
+  background: radial-gradient(ellipse at 50% 40%, #1c2a15, #0d120a 75%);
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s,
+    transform 0.3s;
+}
+.emap:hover {
+  border-color: #b9f464;
+  box-shadow: 0 24px 70px #000a, 0 0 50px #b9f4641f;
+  transform: translateY(-3px);
+}
+.emap-scene {
+  position: relative;
+  height: 260px;
+  overflow: hidden;
+  perspective: 900px;
+  perspective-origin: 50% 30%;
+}
+.emap-plane {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 560px;
+  height: 400px;
+  margin: -200px 0 0 -280px;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--rx) * 1deg)) rotateZ(calc(var(--rz) * 1deg));
+  transition: transform 0.25s ease-out;
+}
+.emap-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px #b9f46422, 0 30px 60px #000c;
+}
+.emap-route {
+  stroke-dasharray: 10 12;
+  filter: drop-shadow(0 0 5px #b9f464);
+  animation: emap-route 1.6s linear infinite;
+}
+@keyframes emap-route {
+  to {
+    stroke-dashoffset: -44;
+  }
+}
+/* extruded buildings: a top face plus a front and a right wall */
+.emap-bld {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+.emap-bld i,
+.emap-bld b,
+.emap-bld u {
+  position: absolute;
+  display: block;
+}
+.emap-bld i {
+  inset: 0;
+  transform: translateZ(var(--h));
+  background: #3a4d2d;
+  border: 1px solid #b9f46444;
+}
+.emap-bld b {
+  left: 0;
+  top: var(--d);
+  width: 100%;
+  height: var(--h);
+  transform-origin: top;
+  transform: rotateX(90deg);
+  background: linear-gradient(#26341d, #1a2415);
+}
+.emap-bld u {
+  left: 100%;
+  top: 0;
+  width: var(--h);
+  height: 100%;
+  transform-origin: left;
+  transform: rotateY(-90deg);
+  background: linear-gradient(90deg, #1d2917, #121a0e);
+}
+/* venue marker: rings on the ground and a pin that stands up and bounces */
+.emap-ring {
+  position: absolute;
+  left: 50%;
+  top: 47.5%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 2px solid #b9f464;
+  border-radius: 50%;
+  box-shadow: 0 0 18px #b9f464aa;
+  animation: emap-ping 2.6s ease-out infinite;
+}
+.emap-ring-2 {
+  animation-delay: -1.3s;
+}
+@keyframes emap-ping {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.6);
+  }
+}
+.emap-pin {
+  position: absolute;
+  left: 50%;
+  top: 47.5%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: rotateZ(calc(var(--rz) * -1deg)) rotateX(calc(var(--rx) * -1deg));
+  transition: transform 0.25s ease-out;
+}
+.emap-pin span {
+  position: absolute;
+  left: -21px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50% 50% 50% 4px;
+  transform-origin: 50% 100%;
+  transform: rotate(-45deg);
+  background: #b9f464;
+  color: #17200d;
+  box-shadow: 0 10px 26px #000c, 0 0 30px #b9f464aa;
+  animation: emap-bounce 1.8s ease-in-out infinite;
+}
+.emap-pin svg {
+  transform: rotate(45deg);
+}
+@keyframes emap-bounce {
+  50% {
+    translate: 0 -14px;
+  }
+}
+.emap-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 18px 22px 20px;
+  border-top: 1px solid #ffffff14;
+  background: #0b0f08;
+}
+.emap-kicker {
+  color: #b9f464;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+.emap-card strong {
+  color: #f4f7f0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.emap-addr {
+  color: #a8afa2;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.emap-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: #b9f464;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.org {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 28px 26px;
+  border: 1px solid #2b3324;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #181d14, #0e110b);
+}
+.org-plain {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.org-plain strong {
+  color: #f4f7f0;
+  font-size: 20px;
+}
+.org-brand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    380px circle at var(--mx, 80%) var(--my, 0%),
+    #b9f46424,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+.org-brand > * {
+  position: relative;
+}
+.org-kicker {
+  display: block;
+  color: #b9f464;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+.org-mark {
+  display: inline-flex;
+  align-items: flex-start;
+  margin: 10px 0 6px;
+  color: #f4f7f0;
+  font-size: clamp(40px, 8vw, 68px);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+.org-mark sup {
+  margin: 4px 0 0 2px;
+  font-size: 0.28em;
+  letter-spacing: 0;
+  color: #b9f464;
+}
+.org-letter {
+  display: inline-block;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.3s;
+  transition-delay: calc(var(--i) * 25ms);
+}
+.org-brand:hover .org-letter {
+  transform: translateY(-6px);
+  color: #b9f464;
+}
+.org-brand p {
+  max-width: 420px;
+  margin: 0 0 16px;
+  color: #c5ccc0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.org-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.org-tags span {
+  padding: 6px 13px;
+  border: 1px solid #3a4530;
+  border-radius: 50px;
+  color: #eaf0e2;
+  font-size: 12px;
+  font-weight: 700;
+}
+.org-tags .lime {
+  border-color: #b9f464;
+  background: #b9f464;
+  color: #17200d;
+}
+.org-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+.org-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #b9f464;
+  font-size: 13px;
+  font-weight: 800;
+}
+.org-actions a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 650px) {
+  .emap-scene {
+    height: 230px;
+  }
+  .emap-plane {
+    width: 460px;
+    height: 330px;
+    margin: -165px 0 0 -230px;
+    top: 40%;
+  }
+  .emap-card {
+    padding: 16px 18px 18px;
+  }
+  .org {
+    padding: 22px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .emap-route,
+  .emap-ring,
+  .emap-pin span {
+    animation: none;
+  }
+  .emap-ring {
+    opacity: 0.6;
+  }
+}

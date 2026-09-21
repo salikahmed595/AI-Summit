@@ -673,6 +673,17 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
     photoY: 330,
     photoSize: 300,
     nameY: 710,
+    // Every new event starts from the same defaults as the AI Summit, so
+    // the page looks identical each time and only the content changes.
+    ...(kind === "events"
+      ? {
+          time: "16:00",
+          end: "19:00",
+          organizer: "PAICONS",
+          cta: "Get Your Pass",
+          showSocialProof: true,
+        }
+      : {}),
     ...record,
   });
   const [error, setError] = useState(""),
@@ -746,12 +757,27 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
           onChange={set("banner")}
         />
         <Area
-          label="Description"
+          label={
+            isEvent
+              ? "Description — shows as the “About this event” dropdown"
+              : "Description"
+          }
+          placeholder={
+            isEvent
+              ? "A short, punchy pitch: 2–3 short paragraphs, or one key fact per line."
+              : undefined
+          }
           value={form.description}
           onChange={set("description")}
         />
         {isEvent && (
           <>
+            <p className="muted">
+              Every event uses the same page layout — description, outcomes and
+              agenda open as dropdowns, tickets show as Free and Premium cards,
+              times show in 12-hour format, and the location and organizer
+              cards are added automatically. You only fill in the content.
+            </p>
             <div className="grid">
               <Choice
                 label="Category"
@@ -773,10 +799,16 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
                 onChange={set("date")}
               />
               <Field
-                label="Time (Pakistan time)"
+                label="Start time (Pakistan time)"
                 type="time"
                 value={form.time}
                 onChange={set("time")}
+              />
+              <Field
+                label="End time (Pakistan time)"
+                type="time"
+                value={form.end}
+                onChange={set("end")}
               />
               <Field
                 label="Venue / online meeting location"
@@ -790,13 +822,13 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
                 onChange={set("address")}
               />
               <Field
-                label="Map URL"
+                label="Google Maps link — paste the Share link of the exact venue (the map card opens it; blank = search venue + address)"
                 type="url"
                 value={form.mapUrl}
                 onChange={set("mapUrl")}
               />
               <Field
-                label="Organizer"
+                label="Organizer — “PAICONS” shows the PAICONS brand card"
                 value={form.organizer}
                 onChange={set("organizer")}
               />
@@ -840,8 +872,16 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               </label>
             </div>
             {[
-              ["outcomes", "Event outcomes"],
-              ["agenda", "Agenda"],
+              [
+                "outcomes",
+                "What you’ll take away — one point per line (shows as a dropdown)",
+                "Choose skills that match your goals\nMeet founders and operators\nFind new opportunities",
+              ],
+              [
+                "agenda",
+                "Agenda — one item per line (shows as a dropdown)",
+                "4:00 PM — Doors open\n4:30 PM — Opening keynote\n6:45 PM — Networking",
+              ],
               ["faqs", "Frequently asked questions"],
               [
                 "testimonials",
@@ -849,8 +889,14 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               ],
               ["cancellation", "Cancellation / refund information"],
               ["benefits", "Event or course benefits"],
-            ].map(([k, l]) => (
-              <Area key={k} label={l} value={form[k]} onChange={set(k)} />
+            ].map(([k, l, ph]) => (
+              <Area
+                key={k}
+                label={l}
+                placeholder={ph}
+                value={form[k]}
+                onChange={set(k)}
+              />
             ))}
             <h3>Optional registration fields</h3>
             <div className="row">

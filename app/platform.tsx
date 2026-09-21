@@ -1,6 +1,7 @@
 "use client";
 import { Fragment, useEffect, useState } from "react";
 import { ArrowUpRight, Menu, Mail, Calendar, Clock, MapPin } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { googleSignIn } from "./auth-actions";
 import {
   Select,
@@ -471,7 +472,8 @@ export function Header() {
           </a>
           <Sheet>
             <SheetTrigger aria-label="Open navigation" className="mobile-menu">
-              <Menu size={20} />
+              <Menu size={18} />
+              <span>Menu</span>
             </SheetTrigger>
             <SheetContent>
               <SheetTitle>PAICONS</SheetTitle>
@@ -494,7 +496,41 @@ export function Header() {
           </Sheet>
         </div>
       </header>
+      <QuickNav />
     </>
+  );
+}
+// On phones the desktop links are hidden behind the menu, which first-time
+// visitors don't always notice. This row keeps every page one tap away, right
+// under the header, and highlights the page you're on.
+function QuickNav() {
+  const pathname = usePathname() || "/";
+  const pages = [
+    ["Home", "/"],
+    ["Events", "/events"],
+    ["Courses", "/courses"],
+    ["Membership", "/membership"],
+    ["About", "/about"],
+    ["Partners", "/partners"],
+    ["Contact", "/contact"],
+  ];
+  return (
+    <nav className="nav-quick" aria-label="Site pages">
+      {pages.map(([label, href]) => {
+        const current =
+          href === "/" ? pathname === "/" : pathname.startsWith(href);
+        return (
+          <a
+            key={href}
+            href={href}
+            className={current ? "current" : undefined}
+            aria-current={current ? "page" : undefined}
+          >
+            {label}
+          </a>
+        );
+      })}
+    </nav>
   );
 }
 export function Upload({

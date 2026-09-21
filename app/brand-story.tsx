@@ -270,10 +270,26 @@ export function LearnConnectBuild() {
           discover career opportunities, PAICONS gives you a place to move
           forward.
         </p>
+      </div>
+    </section>
+  );
+}
 
+/** The closing statement, its own section so the "Proof, not promises"
+ *  videos can sit between the pillars and it. */
+export function MissionStatement() {
+  const ref = useInView<HTMLElement>();
+  return (
+    <section
+      ref={ref}
+      className="bs bs-closing"
+      onPointerMove={spotlight}
+      aria-label="Our mission"
+    >
+      <div className="bs-inner">
         <div
           className="bs-mission bs-rise"
-          style={{ "--d": "0.4s" } as React.CSSProperties}
+          style={{ "--d": "0.1s" } as React.CSSProperties}
         >
           <span>Our mission is simple:</span>
           <strong>

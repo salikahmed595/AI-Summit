@@ -1,9 +1,9 @@
 import { Fragment } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { HomeContent } from "./home-live";
-import { CommunityPopup, PremiumMotion } from "./premium-home";
+import { CommunityPopup, PremiumMotion, TrustReels } from "./premium-home";
 import { Header } from "./platform";
-import { WhatIsPaicons, LearnConnectBuild } from "./brand-story";
+import { WhatIsPaicons, LearnConnectBuild, MissionStatement } from "./brand-story";
 
 export default function Home() {
   return <><PremiumMotion /><Header /><main>
@@ -23,6 +23,8 @@ export default function Home() {
     </div>
     <WhatIsPaicons />
     <LearnConnectBuild />
+    <TrustReels />
+    <MissionStatement />
     <HomeContent />
     <section className="partner-band"><div className="eyebrow">LET'S MAKE IT HAPPEN</div><h2>Build Pakistan&apos;s AI<br />future with us.</h2><a className="button light" href="/partners">Become a Partner <ArrowUpRight size={18} /></a></section>
   </main><CommunityPopup /><footer><div><a className="brand" href="/">PAICONS<span>®</span></a><p>Pakistan AI Collaboration &<br />Opportunities Network</p><strong>Learn. Connect. Build.</strong></div><div><a href="/events">Events</a><a href="/courses">Courses</a><a href="/about">About PAICONS</a></div><div><a href="/partners">Partnerships</a><a href="/contact">Contact</a></div><div><a href="/privacy">Privacy Policy</a><a href="/terms">Terms</a><a href="/refund-policy">Refund Policy</a></div><div className="footer-bottom">© {new Date().getFullYear()} PAICONS<span>MADE FOR CONNECTION. BUILT FOR POSSIBILITY.</span></div></footer></>;

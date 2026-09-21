@@ -4,10 +4,13 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
   BadgeCheck,
+  Pause,
   Play,
   ScanLine,
   ShieldCheck,
   UserCheck,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -87,6 +90,90 @@ export function PremiumMotion() {
   return null;
 }
 
+/** One reel with consistent controls: a play/pause button centred on the
+ *  video and a mute button at the bottom right — the same place on every
+ *  card. Tapping the video also toggles playback. */
+function ReelCard({
+  reel,
+  index,
+  register,
+  onPlay,
+}: {
+  reel: { src: string; poster: string; label: string };
+  index: number;
+  register: (el: HTMLVideoElement | null) => void;
+  onPlay: (el: HTMLVideoElement) => void;
+}) {
+  const video = useRef<HTMLVideoElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const toggle = () => {
+    const el = video.current;
+    if (!el) return;
+    if (el.paused) void el.play().catch(() => setPlaying(false));
+    else el.pause();
+  };
+  return (
+    <article className="reel-card">
+      <div
+        className={`reel-frame${playing ? " playing" : ""}`}
+        onClick={toggle}
+      >
+        <video
+          ref={(el) => {
+            video.current = el;
+            register(el);
+          }}
+          src={reel.src}
+          poster={reel.poster}
+          playsInline
+          preload="none"
+          onPlay={(event) => {
+            setPlaying(true);
+            onPlay(event.currentTarget);
+          }}
+          onPause={() => setPlaying(false)}
+          onEnded={() => setPlaying(false)}
+          aria-label={reel.label}
+        />
+        <span className="reel-index">{String(index + 1).padStart(2, "0")}</span>
+        <span className="reel-play">
+          <Play size={14} fill="currentColor" /> WATCH
+        </span>
+        <button
+          type="button"
+          className="reel-center"
+          aria-label={playing ? `Pause ${reel.label}` : `Play ${reel.label}`}
+        >
+          {playing ? (
+            <Pause size={26} fill="currentColor" />
+          ) : (
+            <Play size={26} fill="currentColor" />
+          )}
+        </button>
+        <button
+          type="button"
+          className="reel-mute"
+          aria-label={muted ? "Unmute video" : "Mute video"}
+          onClick={(event) => {
+            event.stopPropagation();
+            const el = video.current;
+            if (!el) return;
+            el.muted = !el.muted;
+            setMuted(el.muted);
+          }}
+        >
+          {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+        </button>
+      </div>
+      <div className="reel-caption">
+        <span>{reel.label}</span>
+        <ArrowUpRight size={16} />
+      </div>
+    </article>
+  );
+}
+
 export function TrustReels() {
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const playOnly = (active: HTMLVideoElement) => {
@@ -113,32 +200,15 @@ export function TrustReels() {
       <div className="reels-window" aria-label="PAICONS community videos">
         <div className="reels-track">
           {reels.map((reel, index) => (
-            <article className="reel-card" key={reel.src}>
-              <div className="reel-frame">
-                <video
-                  ref={(video) => {
-                    videoRefs.current[index] = video;
-                  }}
-                  src={reel.src}
-                  poster={reel.poster}
-                  controls
-                  playsInline
-                  preload="none"
-                  onPlay={(event) => playOnly(event.currentTarget)}
-                  aria-label={reel.label}
-                />
-                <span className="reel-index">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="reel-play">
-                  <Play size={14} fill="currentColor" /> WATCH
-                </span>
-              </div>
-              <div className="reel-caption">
-                <span>{reel.label}</span>
-                <ArrowUpRight size={16} />
-              </div>
-            </article>
+            <ReelCard
+              key={reel.src}
+              reel={reel}
+              index={index}
+              register={(el) => {
+                videoRefs.current[index] = el;
+              }}
+              onPlay={playOnly}
+            />
           ))}
         </div>
       </div>

@@ -2318,6 +2318,9 @@ details.event-accordion:first-of-type {
   border: 0;
   color: inherit;
 }
+.nav-quick {
+  display: none;
+}
 .mobile-links {
   display: flex;
   flex-direction: column;
@@ -2507,7 +2510,43 @@ label textarea {
 }
 @media (max-width: 650px) {
   .mobile-menu {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 13px;
+    border: 1px solid #3a4530;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .nav-quick {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 1px solid #1f261a;
+    background: #0d0f0c;
+    -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, #000 88%, transparent);
+  }
+  .nav-quick::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-quick a {
+    flex: none;
+    padding: 9px 16px;
+    border: 1px solid #333b2b;
+    border-radius: 50px;
+    color: #d5dccd;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .nav-quick a.current {
+    border-color: #b9f464;
+    background: #b9f464;
+    color: #17200d;
   }
   .mobile-ticket-cta {
     display: flex;
@@ -3707,5 +3746,97 @@ label textarea {
   }
   .emap-ring {
     opacity: 0.6;
+  }
+}
+
+/* Reels: same centred play/pause and bottom-right mute on every card */
+.reel-frame {
+  cursor: pointer;
+}
+.reel-center,
+.reel-mute {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+.reel-center {
+  top: 50%;
+  left: 50%;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #b9f464;
+  color: #17200d;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 10px 40px #000a, 0 0 34px #b9f46466;
+  transition:
+    opacity 0.3s,
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reel-frame:hover .reel-center {
+  transform: translate(-50%, -50%) scale(1.06);
+}
+.reel-frame.playing .reel-center {
+  opacity: 0;
+}
+.reel-frame.playing:hover .reel-center,
+.reel-frame.playing .reel-center:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .reel-frame.playing .reel-center {
+    opacity: 0.5;
+  }
+}
+.reel-mute {
+  right: 18px;
+  bottom: 18px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ffffff2e;
+  border-radius: 50%;
+  background: #0b0e09cc;
+  color: #f4f7f0;
+  backdrop-filter: blur(6px);
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+.reel-mute:hover {
+  background: #b9f464;
+  color: #17200d;
+}
+.reel-frame.playing .reel-play {
+  opacity: 0;
+}
+.reel-play {
+  transition: opacity 0.3s;
+}
+.reel-center:focus-visible,
+.reel-mute:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* the mission statement now closes the section after the reels */
+.bs-pillars {
+  border-bottom: 0;
+}
+.bs-closing {
+  padding: 84px 0 96px;
+}
+.bs-closing .bs-mission {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+@media (max-width: 650px) {
+  .bs-closing {
+    padding: 56px 0 64px;
   }
 }

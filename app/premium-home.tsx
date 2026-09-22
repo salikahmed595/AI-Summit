@@ -105,18 +105,26 @@ function ReelCard({
   onPlay: (el: HTMLVideoElement) => void;
 }) {
   const video = useRef<HTMLVideoElement | null>(null);
+  const flashTimer = useRef<number | undefined>(undefined);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [flash, setFlash] = useState(false);
   const toggle = () => {
     const el = video.current;
     if (!el) return;
     if (el.paused) void el.play().catch(() => setPlaying(false));
     else el.pause();
+    // Briefly show the button for the tap that just happened, then let it
+    // fade — a touch screen has no hover to reveal it otherwise.
+    setFlash(true);
+    window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setFlash(false), 550);
   };
+  useEffect(() => () => window.clearTimeout(flashTimer.current), []);
   return (
     <article className="reel-card">
       <div
-        className={`reel-frame${playing ? " playing" : ""}`}
+        className={`reel-frame${playing ? " playing" : ""}${flash ? " flash" : ""}`}
         onClick={toggle}
       >
         <video

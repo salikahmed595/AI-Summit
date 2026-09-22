@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import PassDownload from "./pass-download";
 import { formatTime12 } from "./format-time";
 import { cleanDescription, mapsHref } from "./event-text";
+import { DEFAULT_BANK_DETAILS } from "./payment-info";
 import { EventMap, OrganizerCard } from "./event-map";
 import Admin from "./admin-panel";
 
@@ -369,6 +370,32 @@ export function Area({ label, value, onChange, ...rest }: any) {
         {...rest}
       />
     </label>
+  );
+}
+function CopyRow({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="pay-row">
+      <div>
+        <span className="pay-label">{label}</span>
+        <strong className="pay-value">{value}</strong>
+      </div>
+      <button
+        type="button"
+        className="pay-copy"
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1600);
+          } catch {
+            // Clipboard access can be blocked; the value is still selectable.
+          }
+        }}
+      >
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </div>
   );
 }
 function LocalPhotoField({
@@ -1226,18 +1253,44 @@ function Registration({ event, ticket, config }: any) {
           <div className="form-section-title">
             <span>3</span> Payment · PKR {ticket.displayPrice.toLocaleString()}
           </div>
-          {config.payment ? (
-            <p style={{ whiteSpace: "pre-wrap" }}>{config.payment}</p>
-          ) : (
-            <p className="error">
-              Payment details are not available yet. Please contact PAICONS.
+          <ol className="pay-steps">
+            <li>
+              <span>1</span> Send{" "}
+              <b style={{ whiteSpace: "nowrap" }}>
+                PKR {ticket.displayPrice.toLocaleString()}
+              </b>{" "}
+              using the bank details below.
+            </li>
+            <li>
+              <span>2</span> Take a screenshot of the successful transfer.
+            </li>
+            <li>
+              <span>3</span> Upload it and enter the reference number — that's it.
+            </li>
+          </ol>
+          <div className="pay-card">
+            {DEFAULT_BANK_DETAILS.map((row) => (
+              <CopyRow key={row.label} label={row.label} value={row.value} />
+            ))}
+          </div>
+          {config.payment && (
+            <p className="pay-extra" style={{ whiteSpace: "pre-wrap" }}>
+              {config.payment}
             </p>
           )}
+          <p className="pay-note">
+            Paying another way? Message us on WhatsApp first to confirm the
+            details:{" "}
+            <a href={PAICONS_WHATSAPP} target="_blank" rel="noopener noreferrer">
+              chat with PAICONS
+            </a>
+            .
+          </p>
           <Choice
             label="Payment method"
             value={form.method}
             onChange={set("method")}
-            options={["Easypaisa", "JazzCash", "Bank Transfer"]}
+            options={["Bank Transfer", "Easypaisa", "JazzCash"]}
           />
           <Field
             label="Transaction / reference number"
@@ -1279,7 +1332,7 @@ function Registration({ event, ticket, config }: any) {
       )}
       <button
         className="button"
-        disabled={busy || (ticket.displayPrice > 0 && !config.payment)}
+        disabled={busy}
       >
         {busy
           ? "Submitting…"

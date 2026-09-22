@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { api, Field, Area, Choice, Upload } from "./platform";
 import { googleSignOut } from "./auth-actions";
+import { DEFAULT_PAYMENT_TEXT } from "./payment-info";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -685,6 +686,12 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
         }
       : {}),
     ...record,
+    // Never leave a settings record's payment instructions blank — even one
+    // saved before this default existed — so a visitor always sees the
+    // organizer's real payment details.
+    ...(kind === "settings" && !record.payment
+      ? { payment: DEFAULT_PAYMENT_TEXT }
+      : {}),
   });
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),

@@ -1,6 +1,7 @@
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 import { put as blobPut, get as blobGet, del as blobDel } from "@vercel/blob";
 import { getSiteUser } from "@/app/site-auth";
+import { DEFAULT_PAYMENT_TEXT } from "@/app/payment-info";
 
 // --- D1-compatible SQL shim over Neon Postgres --------------------------
 // The route handlers in app/api/paicon were written against Cloudflare D1's
@@ -193,6 +194,7 @@ export async function settings() {
         "Pakistan AI Collaboration & Opportunities Network brings curious minds together to learn, connect, and build.",
       caption:
         "Hello, my name is {NAME} and I'm attending {EVENT_NAME} by PAICONS — Pakistan AI Collaboration & Opportunities Network. Join me at {VENUE} on {DATE}. #PAICONS",
+      payment: DEFAULT_PAYMENT_TEXT,
     }
   );
 }

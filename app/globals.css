@@ -3788,10 +3788,11 @@ label textarea {
 .reel-frame.playing .reel-center:focus-visible {
   opacity: 1;
 }
-@media (hover: none) {
-  .reel-frame.playing .reel-center {
-    opacity: 0.5;
-  }
+/* Touch devices have no hover: flash the icon for a moment after every tap
+   (play or pause) instead of leaving it sitting over the person's face. */
+.reel-frame.flash .reel-center {
+  opacity: 1;
+  transition: opacity 0.15s;
 }
 .reel-mute {
   right: 18px;
@@ -3878,5 +3879,113 @@ label textarea {
   .org-brand .org-tags,
   .org-brand .org-actions {
     justify-content: flex-end;
+  }
+}
+
+/* Registration: simple, scannable "how to pay" */
+.pay-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0 20px;
+  padding: 0;
+  list-style: none;
+}
+.pay-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: #d5dccd;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.pay-steps span {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #b9f464;
+  color: #17200d;
+  font-size: 12px;
+  font-weight: 800;
+}
+.pay-steps b {
+  color: #f4f7f0;
+}
+.pay-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  border: 1px solid #333b2b;
+  border-radius: 12px;
+  background: #171c13;
+  overflow: hidden;
+}
+.pay-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+}
+.pay-row + .pay-row {
+  border-top: 1px solid #262e1f;
+}
+.pay-label {
+  display: block;
+  color: #8f9787;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.pay-value {
+  display: block;
+  margin-top: 3px;
+  color: #f4f7f0;
+  font-size: 15px;
+  font-weight: 700;
+  word-break: break-word;
+}
+.pay-copy {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border: 1px solid #4d6335;
+  border-radius: 50px;
+  background: transparent;
+  color: #b9f464;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.pay-copy:hover {
+  background: #b9f464;
+  color: #17200d;
+}
+.pay-extra {
+  margin-bottom: 14px;
+  color: #c5ccc0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.pay-note {
+  margin-bottom: 18px;
+  color: #a8afa2;
+  font-size: 13px;
+}
+.pay-note a {
+  color: #b9f464;
+  font-weight: 700;
+}
+@media (max-width: 650px) {
+  .pay-row {
+    padding: 12px 14px;
   }
 }

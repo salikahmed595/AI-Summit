@@ -80,6 +80,9 @@ const SALIK_INSTAGRAM = "https://www.instagram.com/salikbuilds/";
 const SALIK_LINKEDIN = "https://www.linkedin.com/in/salikahmed110/";
 const PAICONS_INSTAGRAM = "https://www.instagram.com/paicons_/";
 const PAICONS_WHATSAPP = "https://chat.whatsapp.com/HXYTEtOcO09EVCCYuappJg";
+// Direct chat with Salik, for anyone who needs help with a payment —
+// distinct from the community group link above.
+const PAICONS_WHATSAPP_CHAT = "https://wa.me/923152490122";
 const defaultFounderStory = [
   {
     label: "JANUARY 2026",
@@ -1281,7 +1284,11 @@ function Registration({ event, ticket, config }: any) {
           <p className="pay-note">
             Paying another way? Message us on WhatsApp first to confirm the
             details:{" "}
-            <a href={PAICONS_WHATSAPP} target="_blank" rel="noopener noreferrer">
+            <a
+              href={PAICONS_WHATSAPP_CHAT}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               chat with PAICONS
             </a>
             .

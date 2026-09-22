@@ -1,6 +1,16 @@
 "use client";
 import { Fragment, useEffect, useState } from "react";
-import { ArrowUpRight, Menu, Mail, Calendar, Clock, MapPin } from "lucide-react";
+import {
+  ArrowUpRight,
+  Menu,
+  Mail,
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  Star,
+  Award,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { googleSignIn } from "./auth-actions";
 import {
@@ -18,9 +28,16 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import PassDownload from "./pass-download";
+import CourseAccess from "./course-access";
 import { formatTime12 } from "./format-time";
-import { cleanDescription, mapsHref } from "./event-text";
+import { cleanDescription, mapsHref, eventStage } from "./event-text";
 import { DEFAULT_BANK_DETAILS } from "./payment-info";
 import { EventMap, OrganizerCard } from "./event-map";
 import Admin from "./admin-panel";
@@ -465,6 +482,47 @@ export function Choice({ label, value, onChange, options }: any) {
     </label>
   );
 }
+// A "yyyy-mm-dd" date field backed by a small calendar popover, so an
+// organiser can pick a date visually instead of typing it. Falls back to the
+// browser's own date picker on very small screens where a popover calendar
+// is fiddly to use.
+export function DateField({ label, value, onChange }: any) {
+  const [open, setOpen] = useState(false);
+  const selected = value ? new Date(value + "T00:00:00") : undefined;
+  return (
+    <label>
+      {label}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button type="button" className="date-field-trigger">
+            <Calendar size={16} />
+            {selected
+              ? selected.toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "Choose a date"}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-auto p-0">
+          <CalendarPicker
+            mode="single"
+            selected={selected}
+            onSelect={(d: Date | undefined) => {
+              if (!d) return;
+              const y = d.getFullYear();
+              const m = String(d.getMonth() + 1).padStart(2, "0");
+              const day = String(d.getDate()).padStart(2, "0");
+              onChange(`${y}-${m}-${day}`);
+              setOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+    </label>
+  );
+}
 export function Header() {
   return (
     <>
@@ -639,15 +697,29 @@ export function Cards({ items, kind }: any) {
             </div>
           )}
           <div className="eyebrow" style={{ marginTop: 22 }}>
-            {e.category || e.format} · {e.city}
+            {kind === "courses"
+              ? e.category
+              : `${e.category} · ${e.locationType === "online" ? "Online" : e.city}`}
           </div>
+          {kind === "events" && eventStage(e) === "past" && (
+            <span className="pill card-past-pill">Past event</span>
+          )}
           <h2 style={{ fontSize: 28 }}>{e.title}</h2>
           <p>
-            {e.date} {e.time && " · " + formatTime12(e.time)}
-            <br />
-            {kind === "courses"
-              ? `${e.instructor} · ${e.duration} · ${e.level}`
-              : e.venue}
+            {kind === "courses" ? (
+              <>
+                {e.paid ? "Paid" : "Free"}
+                {e.rating && ` · ${e.rating} ★`}
+                {Number(e.enrolledCount) > 0 &&
+                  ` · ${Number(e.enrolledCount).toLocaleString()} enrolled`}
+              </>
+            ) : (
+              <>
+                {e.date} {e.time && " · " + formatTime12(e.time)}
+                <br />
+                {e.locationType === "online" ? e.venue || "Online" : e.venue}
+              </>
+            )}
           </p>
           <span className="text-button">
             {kind === "courses" ? "View course" : "Explore event"}{" "}
@@ -679,7 +751,12 @@ export default function Platform({ path }: { path: string[] }) {
     [error, setError] = useState("");
   const section = path[0];
   useEffect(() => {
-    if (section === "admin" || section === "pass" || section === "verify")
+    if (
+      section === "admin" ||
+      section === "pass" ||
+      section === "verify" ||
+      section === "course-access"
+    )
       return;
     api(
       path[1] && ["events", "courses"].includes(section) ? "public" : "public",
@@ -695,6 +772,8 @@ export default function Platform({ path }: { path: string[] }) {
           <Admin />
         ) : section === "pass" ? (
           <PassDownload />
+        ) : section === "course-access" ? (
+          <CourseAccess />
         ) : section === "verify" ? (
           <Verify qr={path[1]} />
         ) : error ? (
@@ -742,19 +821,19 @@ function PageSkeleton() {
 function Listing({ items, kind }: any) {
   const [query, setQuery] = useState(""),
     [filter, setFilter] = useState("All");
+  // Courses have no dates any more — Upcoming/Past only makes sense for
+  // events, which are still scheduled to a specific day.
   const categories = [
     "All",
-    "Upcoming",
-    "Past",
+    ...(kind === "events" ? ["Upcoming", "Past"] : []),
     ...Array.from(new Set(items.map((x: any) => x.category).filter(Boolean))),
   ];
   const selected = items.filter(
     (e: any) =>
       e.title.toLowerCase().includes(query.toLowerCase()) &&
       (filter === "All" ||
-        (filter === "Upcoming" &&
-          e.date >= new Date().toISOString().slice(0, 10)) ||
-        (filter === "Past" && e.date < new Date().toISOString().slice(0, 10)) ||
+        (filter === "Upcoming" && eventStage(e) === "upcoming") ||
+        (filter === "Past" && eventStage(e) === "past") ||
         e.category === filter),
   );
   useEffect(() => {
@@ -872,6 +951,7 @@ function EventDetails({ event: e, all }: any) {
         <a href="/events">Browse events</a>
       </>
     );
+  const isCourse = e.kind === "courses";
   return (
     <>
       <a className="text-button" href={"/" + e.kind}>
@@ -892,50 +972,104 @@ function EventDetails({ event: e, all }: any) {
         />
       )}
       <div className="eyebrow" style={{ marginTop: 30 }}>
-        {e.category} · {e.city}
+        {e.category} · {isCourse ? "PAICONS" : e.city}
       </div>
       <h1>{e.title}</h1>
-      <div className="event-quickfacts">
-        <div className="event-quickfact">
-          <Calendar size={26} />
-          <div>
-            <strong>
-              {e.date
-                ? new Date(e.date + "T00:00:00").toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })
-                : "Date to be announced"}
-            </strong>
-            <span>Date</span>
-          </div>
+      {isCourse ? (
+        <div className="event-quickfacts">
+          {Number(e.enrolledCount) > 0 && (
+            <div className="event-quickfact">
+              <Users size={26} />
+              <div>
+                <strong>
+                  {Number(e.enrolledCount).toLocaleString()} learners
+                </strong>
+                <span>Enrolled</span>
+              </div>
+            </div>
+          )}
+          {e.rating && (
+            <div className="event-quickfact">
+              <Star size={26} />
+              <div>
+                <strong>{e.rating} / 5</strong>
+                <span>
+                  {Number(e.reviewCount) > 0
+                    ? `${Number(e.reviewCount).toLocaleString()} reviews`
+                    : "Rating"}
+                </span>
+              </div>
+            </div>
+          )}
+          {e.certificate && (
+            <div className="event-quickfact">
+              <Award size={26} />
+              <div>
+                <strong>Certificate</strong>
+                <span>On completion</span>
+              </div>
+            </div>
+          )}
         </div>
-        {e.time && (
+      ) : (
+        <div className="event-quickfacts">
           <div className="event-quickfact">
-            <Clock size={26} />
+            <Calendar size={26} />
             <div>
               <strong>
-                {formatTime12(e.time)}
-                {e.end ? ` – ${formatTime12(e.end)}` : ""}
+                {e.date
+                  ? new Date(e.date + "T00:00:00").toLocaleDateString(
+                      "en-US",
+                      { month: "long", day: "numeric", year: "numeric" },
+                    )
+                  : "Date to be announced"}
               </strong>
-              <span>{e.end ? "Time" : "Start time"}</span>
+              <span>Date</span>
             </div>
           </div>
-        )}
-        <div className="event-quickfact">
-          <MapPin size={26} />
-          <div>
-            <strong>{e.venue || "Venue to be announced"}</strong>
-            <span>{e.city || "Venue"}</span>
+          {e.time && (
+            <div className="event-quickfact">
+              <Clock size={26} />
+              <div>
+                <strong>
+                  {formatTime12(e.time)}
+                  {e.end ? ` – ${formatTime12(e.end)}` : ""}
+                </strong>
+                <span>{e.end ? "Time" : "Start time"}</span>
+              </div>
+            </div>
+          )}
+          <div className="event-quickfact">
+            <MapPin size={26} />
+            <div>
+              <strong>
+                {e.venue ||
+                  (e.locationType === "online"
+                    ? "Online"
+                    : "Venue to be announced")}
+              </strong>
+              <span>
+                {e.locationType === "online" ? "Online" : e.city || "Venue"}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
       <div className="grid">
         <div>
           {[
-            ["About this event", cleanDescription(e.description), false, true],
-            ["What you’ll take away", e.outcomes, true, false],
+            [
+              isCourse ? "About this course" : "About this event",
+              cleanDescription(e.description),
+              false,
+              true,
+            ],
+            [
+              isCourse ? "Skills you’ll gain" : "What you’ll take away",
+              e.outcomes,
+              true,
+              false,
+            ],
             ["Agenda", e.agenda, true, false],
             ["Curriculum", e.curriculum, false, false],
             ["Requirements", e.requirements, false, false],
@@ -963,14 +1097,11 @@ function EventDetails({ event: e, all }: any) {
               </details>
             ) : null,
           )}
-          {e.kind === "courses" && (
-            <p>
-              {e.instructor} · {e.duration} · {e.format} · {e.level}
-            </p>
-          )}
         </div>
         <aside id="tickets">
-          <h2 style={{ fontSize: 30 }}>Get your pass.</h2>
+          <h2 style={{ fontSize: 30 }}>
+            {isCourse ? "Get access." : "Get your pass."}
+          </h2>
           {error && <p className="error">{error}</p>}
           {info?.tickets
             .filter((t: any) => t.status === "active")
@@ -1013,7 +1144,8 @@ function EventDetails({ event: e, all }: any) {
                       </div>
                     </div>
                   </details>
-                  {e.showSocialProof !== false &&
+                  {!isCourse &&
+                    e.showSocialProof !== false &&
                     !soldOut &&
                     t.remaining <= 12 && (
                       <p className="scarcity">
@@ -1031,18 +1163,30 @@ function EventDetails({ event: e, all }: any) {
                     disabled={soldOut}
                     onClick={() => setTicket(t)}
                   >
-                    {soldOut ? "SOLD OUT" : e.cta || "Get Your Pass"}{" "}
+                    {soldOut
+                      ? "SOLD OUT"
+                      : isCourse
+                        ? t.displayPrice
+                          ? "Get Access"
+                          : "Get Free Access"
+                        : e.cta || "Get Your Pass"}{" "}
                     <ArrowUpRight size={17} />
                   </button>
                 </div>
               );
             })}
-          {info && !info.tickets.some((t: any) => t.status === "active") && (
-            <p>Registration will open soon.</p>
+          {info &&
+            !isCourse &&
+            !info.tickets.some((t: any) => t.status === "active") && (
+            <p className={eventStage(e) === "past" ? "sold-out-text" : undefined}>
+              {eventStage(e) === "past"
+                ? "SOLD OUT"
+                : "Registration will open soon."}
+            </p>
           )}
         </aside>
       </div>
-      {mapsHref(e) && (
+      {!isCourse && mapsHref(e) && (
         <div className="event-place">
           <EventMap
             href={mapsHref(e)}
@@ -1067,7 +1211,7 @@ function EventDetails({ event: e, all }: any) {
           <div
             className="mobile-ticket-cta"
             role="group"
-            aria-label="Get your pass"
+            aria-label={isCourse ? "Get access" : "Get your pass"}
           >
             {bookable.map((t: any) => {
               const free = t.displayPrice === 0;
@@ -1079,7 +1223,17 @@ function EventDetails({ event: e, all }: any) {
                   className={`mtc-btn ${premium ? "mtc-premium" : "mtc-free"}`}
                   onClick={() => setTicket(t)}
                 >
-                  <b>{free ? "Free Pass" : premium ? "Premium Pass" : t.name}</b>
+                  <b>
+                    {isCourse
+                      ? free
+                        ? "Free Access"
+                        : "Get Access"
+                      : free
+                        ? "Free Pass"
+                        : premium
+                          ? "Premium Pass"
+                          : t.name}
+                  </b>
                   <small>
                     {free ? "Free" : "PKR " + t.displayPrice.toLocaleString()}
                   </small>
@@ -1168,6 +1322,7 @@ function EventDetails({ event: e, all }: any) {
   );
 }
 function Registration({ event, ticket, config }: any) {
+  const isCourse = event.kind === "courses";
   const [form, setForm] = useState<any>({
       name: "",
       email: "",
@@ -1181,25 +1336,33 @@ function Registration({ event, ticket, config }: any) {
     [error, setError] = useState("");
   const set = (k: string) => (v: any) =>
     setForm((p: any) => ({ ...p, [k]: v }));
+  const stepNumber = isCourse ? 2 : 3;
   return (
     <form
       onSubmit={async (e) => {
         e.preventDefault();
         if (!agree)
           return setError("Please agree to the privacy policy and terms.");
-        if (!photo) return setError("Please upload your photograph.");
+        if (!isCourse && !photo)
+          return setError("Please upload your photograph.");
         setBusy(true);
         setError("");
         try {
           const f = new FormData();
+          const { whatsapp, ...rest } = form;
           f.set(
             "data",
-            JSON.stringify({ ...form, eventId: event.id, ticketId: ticket.id }),
+            JSON.stringify({
+              ...rest,
+              ...(isCourse ? {} : { whatsapp }),
+              eventId: event.id,
+              ticketId: ticket.id,
+            }),
           );
-          f.set("photo", photo);
+          if (photo) f.set("photo", photo);
           if (receipt) f.set("receipt", receipt);
           const r = await api("register", f);
-          location.href = "/pass#" + r.key;
+          location.href = (isCourse ? "/course-access#" : "/pass#") + r.key;
         } catch (err: any) {
           setError(err.message);
           setBusy(false);
@@ -1207,9 +1370,13 @@ function Registration({ event, ticket, config }: any) {
       }}
     >
       <p>
-        {ticket.displayPrice
-          ? "Complete your details and submit proof of payment for manual review."
-          : "Complete your details to receive your free pass."}
+        {isCourse
+          ? ticket.displayPrice
+            ? "Complete your details and submit proof of payment. Your course link unlocks after PAICONS manually reviews it."
+            : "Enter your name and email — your course link opens right after."
+          : ticket.displayPrice
+            ? "Complete your details and submit proof of payment for manual review."
+            : "Complete your details to receive your free pass."}
       </p>
       <div className="form-section">
         <div className="form-section-title">
@@ -1218,7 +1385,7 @@ function Registration({ event, ticket, config }: any) {
         {[
           ["name", "Full name", "text"],
           ["email", "Email", "email"],
-          ["whatsapp", "WhatsApp number", "tel"],
+          ...(isCourse ? [] : [["whatsapp", "WhatsApp number", "tel"]]),
         ].map(([k, l, t]) => (
           <Field
             key={k}
@@ -1240,21 +1407,24 @@ function Registration({ event, ticket, config }: any) {
           />
         ))}
       </div>
-      <div className="form-section">
-        <div className="form-section-title">
-          <span>2</span> Your photo
+      {!isCourse && (
+        <div className="form-section">
+          <div className="form-section-title">
+            <span>2</span> Your photo
+          </div>
+          <LocalPhotoField
+            label="Your photograph"
+            required
+            hint="JPEG or PNG, up to 5 MB. Your actual photograph will appear on your pass."
+            onChange={setPhoto}
+          />
         </div>
-        <LocalPhotoField
-          label="Your photograph"
-          required
-          hint="JPEG or PNG, up to 5 MB. Your actual photograph will appear on your pass."
-          onChange={setPhoto}
-        />
-      </div>
+      )}
       {ticket.displayPrice > 0 && (
         <div className="form-section">
           <div className="form-section-title">
-            <span>3</span> Payment · PKR {ticket.displayPrice.toLocaleString()}
+            <span>{stepNumber}</span> Payment · PKR{" "}
+            {ticket.displayPrice.toLocaleString()}
           </div>
           <ol className="pay-steps">
             <li>
@@ -1345,7 +1515,9 @@ function Registration({ event, ticket, config }: any) {
           ? "Submitting…"
           : ticket.displayPrice
             ? "Submit for approval"
-            : "Register & Get Pass"}
+            : isCourse
+              ? "Get Access"
+              : "Register & Get Pass"}
       </button>
     </form>
   );

@@ -9,6 +9,15 @@ export function cleanDescription(value?: string | null): string {
     .trim();
 }
 
+/** Whether an event is upcoming or past — an organiser's manual "stage"
+ *  choice wins, otherwise it's derived from today's date vs. the event
+ *  date. Events with no date yet are treated as upcoming. */
+export function eventStage(e: { date?: string; stage?: string }): "upcoming" | "past" {
+  if (e.stage === "upcoming" || e.stage === "past") return e.stage;
+  const today = new Date().toISOString().slice(0, 10);
+  return e.date && e.date < today ? "past" : "upcoming";
+}
+
 /** Where the event's map card should send people: the exact Google Maps
  *  link the organiser pasted, or a Google Maps search for venue + address +
  *  city. Returns "" for online events / events with no location. */
@@ -17,7 +26,9 @@ export function mapsHref(e: {
   venue?: string;
   address?: string;
   city?: string;
+  locationType?: string;
 }): string {
+  if (e.locationType === "online") return "";
   if (/^https:\/\//.test(e.mapUrl || "")) return e.mapUrl as string;
   if (/online|zoom|virtual|webinar|google meet|teams/i.test(e.venue || ""))
     return "";

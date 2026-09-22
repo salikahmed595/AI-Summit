@@ -11,7 +11,9 @@ export async function generateMetadata({
   params: Promise<{ path: string[] }>;
 }) {
   const { path } = await params;
-  const privatePage = ["admin", "pass", "verify"].includes(path[0]);
+  const privatePage = ["admin", "pass", "verify", "course-access"].includes(
+    path[0],
+  );
   const base =
     runtime().SITE_URL || "https://paicon-network.sure-emu-1764.chatgpt.site";
   let title = path[0].replaceAll("-", " ");
@@ -50,6 +52,7 @@ export default async function Page({
       "admin",
       "pass",
       "verify",
+      "course-access",
       "events",
       "courses",
       "membership",
@@ -108,6 +111,8 @@ export default async function Page({
   }
   let schema: any = null;
   if (["events", "courses"].includes(path[0]) && path[1]) {
+    const base =
+      runtime().SITE_URL || "https://paicon-network.sure-emu-1764.chatgpt.site";
     let e: any;
     try {
       e = (await content(path[0])).find((x: any) => x.slug === path[1]);
@@ -123,16 +128,21 @@ export default async function Page({
               startDate: e.date + "T" + e.time + ":00+05:00",
               eventStatus: "https://schema.org/EventScheduled",
               eventAttendanceMode:
-                "https://schema.org/OfflineEventAttendanceMode",
-              location: {
-                "@type": "Place",
-                name: e.venue,
-                address: {
-                  "@type": "PostalAddress",
-                  addressLocality: e.city,
-                  addressCountry: "PK",
-                },
-              },
+                e.locationType === "online"
+                  ? "https://schema.org/OnlineEventAttendanceMode"
+                  : "https://schema.org/OfflineEventAttendanceMode",
+              location:
+                e.locationType === "online"
+                  ? { "@type": "VirtualLocation", url: base + "/events/" + e.slug }
+                  : {
+                      "@type": "Place",
+                      name: e.venue,
+                      address: {
+                        "@type": "PostalAddress",
+                        addressLocality: e.city,
+                        addressCountry: "PK",
+                      },
+                    },
               organizer: { "@type": "Organization", name: "PAICONS" },
             }
           : {

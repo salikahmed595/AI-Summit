@@ -37,6 +37,12 @@ const detail = z.object({
   city: short.default("Karachi"),
   organizer: short.default("PAICONS"),
   category: short.default("AI Summit"),
+  // Whether the event happens at a physical venue or online — controls
+  // whether the venue/map/address fields and card are shown at all.
+  locationType: z.enum(["physical", "online"]).default("physical"),
+  // Organisers can override the automatic upcoming/past classification
+  // (which is normally derived from the event date) for a specific event.
+  stage: z.enum(["auto", "upcoming", "past"]).default("auto"),
   banner: short.default(""),
   video: short.default(""),
   capacity: z.coerce.number().int().min(0).max(100000).default(100),
@@ -77,6 +83,13 @@ const detail = z.object({
   testimonials: txt.default(""),
   cancellation: txt.default(""),
   price: z.coerce.number().int().min(0).default(0),
+  // Simple Free/Paid toggle for courses — the single source of truth for
+  // whether the auto-managed "Course Access" ticket is priced.
+  paid: z.boolean().default(false),
+  // Manually-set social-proof numbers shown on the course page.
+  enrolledCount: z.coerce.number().int().min(0).max(10000000).default(0),
+  rating: short.default(""),
+  reviewCount: z.coerce.number().int().min(0).max(10000000).default(0),
   caption: txt.default(""),
   template: short.default(""),
   accent: z
@@ -287,7 +300,10 @@ async function route(req: Request, parts: string[]) {
           .email()
           .max(254)
           .transform((x) => x.toLowerCase()),
-        whatsapp: z.string().regex(/^[+\d\s()-]{7,25}$/),
+        whatsapp: z
+          .string()
+          .regex(/^[+\d\s()-]{7,25}$/)
+          .optional(),
         eventId: id,
         ticketId: id,
         organization: short.optional(),
@@ -339,12 +355,16 @@ async function route(req: Request, parts: string[]) {
     const regId = crypto.randomUUID(),
       key = token(),
       qr = chargedPrice === 0 ? token() : null;
+    // Events need a photo ID for the printed pass; a course simply unlocks a
+    // content link, so no photograph is collected for it.
+    const isCourse = e.kind === "courses";
     const photo = form.get("photo");
-    if (!(photo instanceof File)) throw new Error("Upload your photograph");
+    if (!isCourse && !(photo instanceof File))
+      throw new Error("Upload your photograph");
     let photoId = "",
       receiptId = "";
     try {
-      photoId = await upload(photo, "photo", regId);
+      if (photo instanceof File) photoId = await upload(photo, "photo", regId);
       if (chargedPrice > 0) {
         const receipt = form.get("receipt");
         if (!(receipt instanceof File))
@@ -352,7 +372,7 @@ async function route(req: Request, parts: string[]) {
         receiptId = await upload(receipt, "receipt", regId);
       }
       const extra: any = {
-        whatsapp: data.whatsapp,
+        whatsapp: data.whatsapp || "",
         photo: photoId,
         receipt: receiptId,
         method: chargedPrice > 0 ? data.method : "Free",
@@ -483,7 +503,7 @@ async function route(req: Request, parts: string[]) {
       .parse(body);
     const rid = parsed.id || crypto.randomUUID();
     if (
-      ["events", "courses"].includes(parsed.kind) &&
+      parsed.kind === "events" &&
       parsed.status === "published" &&
       (!/^\d{4}-\d{2}-\d{2}$/.test(parsed.details.date) ||
         !parsed.details.time ||
@@ -492,6 +512,14 @@ async function route(req: Request, parts: string[]) {
     )
       throw new Error(
         "A published event needs a date, time, venue and capacity",
+      );
+    if (
+      parsed.kind === "courses" &&
+      parsed.status === "published" &&
+      !parsed.details.courseLink
+    )
+      throw new Error(
+        "A published course needs a course content link (e.g. a Google Drive link)",
       );
     await db()
       .prepare(
@@ -507,6 +535,29 @@ async function route(req: Request, parts: string[]) {
         now(),
       )
       .run();
+    if (parsed.kind === "courses") {
+      // Courses skip the multi-tier Ticket types UI entirely: a single
+      // "Course Access" ticket is kept in sync with the course's own
+      // Free/Paid choice, id-for-id with the course record so it's always
+      // exactly one ticket per course.
+      await db()
+        .prepare(
+          "INSERT INTO tickets(id,event_id,name,price,capacity,status,data) VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET price=excluded.price,status=excluded.status,data=excluded.data",
+        )
+        .bind(
+          rid,
+          rid,
+          "Course Access",
+          parsed.details.paid ? parsed.details.price : 0,
+          1000000,
+          "active",
+          JSON.stringify({
+            description: "Full access to this course.",
+            benefits: parsed.details.benefits || "",
+          }),
+        )
+        .run();
+    }
     await log(user.email, "save " + parsed.kind, rid);
     return response({ id: rid });
   }
@@ -660,7 +711,7 @@ async function route(req: Request, parts: string[]) {
     if (command.operation === "publish") {
       const recordData = JSON.parse(record.data || "{}");
       if (
-        ["events", "courses"].includes(record.kind) &&
+        record.kind === "events" &&
         (!/^\d{4}-\d{2}-\d{2}$/.test(recordData.date || "") ||
           !recordData.time ||
           !recordData.venue ||
@@ -669,6 +720,31 @@ async function route(req: Request, parts: string[]) {
         throw new Error(
           "A published event needs a date, time, venue and capacity",
         );
+      if (record.kind === "courses" && !recordData.courseLink)
+        throw new Error(
+          "A published course needs a course content link (e.g. a Google Drive link)",
+        );
+      // Publishing here (the list's quick Publish button) skips the
+      // RecordEditor's save step, so the course's single auto-managed
+      // ticket needs the same upsert here to guarantee one always exists.
+      if (record.kind === "courses")
+        await db()
+          .prepare(
+            "INSERT INTO tickets(id,event_id,name,price,capacity,status,data) VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET price=excluded.price,status=excluded.status,data=excluded.data",
+          )
+          .bind(
+            command.id,
+            command.id,
+            "Course Access",
+            recordData.paid ? Number(recordData.price) || 0 : 0,
+            1000000,
+            "active",
+            JSON.stringify({
+              description: "Full access to this course.",
+              benefits: recordData.benefits || "",
+            }),
+          )
+          .run();
     }
     await db()
       .prepare("UPDATE records SET status=?,updated=? WHERE id=?")

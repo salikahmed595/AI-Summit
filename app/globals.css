@@ -2447,6 +2447,103 @@ label textarea {
   max-width: 590px;
   margin-bottom: 30px;
 }
+
+/* Organizer workspace: the public site's compact type reads well as
+   marketing copy but is hard to work with as a day-to-day tool, so every
+   label, input, button and pill inside the admin panel gets a size bump. */
+.admin-panel label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f3f4ed;
+  margin: 18px 0 8px;
+}
+.admin-panel input,
+.admin-panel textarea,
+.admin-panel select,
+.admin-panel [data-slot="select-trigger"] {
+  font-size: 15px;
+  padding: 14px;
+}
+.admin-panel .muted,
+.admin-panel small {
+  font-size: 13px;
+}
+.admin-panel .eyebrow {
+  font-size: 12px;
+  letter-spacing: 1.6px;
+}
+.admin-panel .button,
+.admin-panel .danger-button,
+.admin-panel button:not(.text-button):not(.read-more) {
+  font-size: 15px;
+  padding: 15px 20px;
+  border-radius: 7px;
+}
+.admin-panel .button.small {
+  padding: 12px 16px;
+}
+.admin-panel .text-button {
+  font-size: 14px;
+}
+.admin-panel .pill {
+  font-size: 12px;
+  padding: 8px 14px;
+}
+.admin-panel h2 {
+  font-size: 30px;
+}
+.admin-panel h3 {
+  font-size: 19px;
+}
+.admin-panel table {
+  font-size: 14px;
+}
+.admin-panel th,
+.admin-panel td {
+  padding: 16px 14px;
+}
+.admin-panel [data-slot="tabs-trigger"] {
+  font-size: 14px;
+  padding: 12px 18px;
+}
+.admin-panel [data-slot="checkbox"] {
+  width: 20px;
+  height: 20px;
+}
+.admin-panel .row label {
+  margin: 0;
+}
+
+/* Small calendar-picker trigger used for the event Date field. */
+.date-field-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: #10150d;
+  color: #fff;
+  border: 1px solid #414b36;
+  border-radius: 5px;
+  padding: 12px;
+  font: inherit;
+  text-align: left;
+}
+.admin-panel .date-field-trigger {
+  font-size: 15px;
+  padding: 14px;
+}
+.date-field-trigger:hover {
+  border-color: #b9f464;
+}
+
+/* Public events listing: a quiet badge marking an event as already over. */
+.card-past-pill {
+  margin-top: 12px;
+}
+.sold-out-text {
+  color: #ffabab;
+  font-weight: 700;
+}
 .mobile-ticket-cta {
   display: none;
 }

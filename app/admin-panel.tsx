@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { api, Field, Area, Choice, Upload } from "./platform";
+import { api, Field, Area, Choice, Upload, DateField } from "./platform";
 import { googleSignOut } from "./auth-actions";
 import { DEFAULT_PAYMENT_TEXT } from "./payment-info";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -130,7 +130,7 @@ export default function Admin() {
     URL.revokeObjectURL(url);
   }
   return (
-    <>
+    <div className="admin-panel">
       <div className="row" style={{ justifyContent: "space-between" }}>
         <div>
           <div className="eyebrow">PAICONS / ORGANIZER WORKSPACE</div>
@@ -656,7 +656,7 @@ export default function Admin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
 function RecordEditor({ record, data, onSave, onCancel }: any) {
@@ -683,6 +683,19 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
           organizer: "PAICONS",
           cta: "Get Your Pass",
           showSocialProof: true,
+          locationType: "physical",
+          stage: "auto",
+        }
+      : {}),
+    ...(kind === "courses"
+      ? {
+          // Older courses were priced with just the "price" field, before
+          // this Free/Paid toggle existed — infer it from that so they don't
+          // silently flip to "Free" the first time they're reopened.
+          paid: record.paid ?? Number(record.price) > 0,
+          price: record.price ?? 0,
+          enrolledCount: record.enrolledCount ?? 0,
+          reviewCount: record.reviewCount ?? 0,
         }
       : {}),
     ...record,
@@ -777,7 +790,7 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
           value={form.description}
           onChange={set("description")}
         />
-        {isEvent && (
+        {kind === "events" && (
           <>
             <p className="muted">
               Every event uses the same page layout, fixed in the site itself:
@@ -801,9 +814,25 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
                 value={form.capacity}
                 onChange={(v: string) => set("capacity")(Number(v))}
               />
-              <Field
+            </div>
+            <div className="grid">
+              <Choice
+                label="Listing status"
+                value={form.stage || "auto"}
+                onChange={set("stage")}
+                options={[
+                  {
+                    value: "auto",
+                    label: "Automatic — Past once the date has passed",
+                  },
+                  { value: "upcoming", label: "Force Upcoming" },
+                  { value: "past", label: "Force Past" },
+                ]}
+              />
+            </div>
+            <div className="grid">
+              <DateField
                 label="Date"
-                type="date"
                 value={form.date}
                 onChange={set("date")}
               />
@@ -819,23 +848,48 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
                 value={form.end}
                 onChange={set("end")}
               />
+            </div>
+            <div className="grid">
+              <Choice
+                label="How is this event held?"
+                value={form.locationType || "physical"}
+                onChange={set("locationType")}
+                options={[
+                  { value: "physical", label: "Physical venue" },
+                  { value: "online", label: "Online" },
+                ]}
+              />
+            </div>
+            <div className="grid">
               <Field
-                label="Venue / online meeting location"
+                label={
+                  form.locationType === "online"
+                    ? "Online meeting link / platform (e.g. Google Meet, Zoom)"
+                    : "Venue / online meeting location"
+                }
                 value={form.venue}
                 onChange={set("venue")}
               />
-              <Field label="City" value={form.city} onChange={set("city")} />
-              <Field
-                label="Full address"
-                value={form.address}
-                onChange={set("address")}
-              />
-              <Field
-                label="Google Maps link — paste the Share link of the exact venue (the map card opens it; blank = search venue + address)"
-                type="url"
-                value={form.mapUrl}
-                onChange={set("mapUrl")}
-              />
+              {form.locationType !== "online" && (
+                <>
+                  <Field
+                    label="City"
+                    value={form.city}
+                    onChange={set("city")}
+                  />
+                  <Field
+                    label="Full address"
+                    value={form.address}
+                    onChange={set("address")}
+                  />
+                  <Field
+                    label="Google Maps link — paste the Share link of the exact venue (the map card opens it; blank = search venue + address)"
+                    type="url"
+                    value={form.mapUrl}
+                    onChange={set("mapUrl")}
+                  />
+                </>
+              )}
               <Field
                 label="Organizer — “PAICONS” shows the PAICONS brand card"
                 value={form.organizer}
@@ -897,7 +951,7 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
                 "Verified testimonials — one per line: Name | Location | Quote | Approved photo URL",
               ],
               ["cancellation", "Cancellation / refund information"],
-              ["benefits", "Event or course benefits"],
+              ["benefits", "Event benefits"],
             ].map(([k, l, ph]) => (
               <Area
                 key={k}
@@ -932,50 +986,6 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
                 </label>
               ))}
             </div>
-            {kind === "courses" && (
-              <>
-                <div className="grid">
-                  {[
-                    ["instructor", "Instructor"],
-                    ["duration", "Duration"],
-                    ["level", "Level"],
-                    ["format", "Online / Physical"],
-                    ["courseLocation", "Location"],
-                    ["courseLink", "Online course link"],
-                  ].map(([k, l]) => (
-                    <Field
-                      key={k}
-                      label={l}
-                      value={form[k]}
-                      onChange={set(k)}
-                    />
-                  ))}
-                </div>
-                <div className="grid">
-                  <Field
-                    label="Price (PKR)"
-                    type="number"
-                    min="0"
-                    value={form.price}
-                    onChange={(v: string) => set("price")(Number(v))}
-                  />
-                  <Field
-                    label="Discount price (PKR)"
-                    type="number"
-                    min="0"
-                    value={form.discountPrice}
-                    onChange={(v: string) => set("discountPrice")(Number(v))}
-                  />
-                </div>
-                {[
-                  ["curriculum", "Curriculum"],
-                  ["requirements", "Requirements"],
-                  ["certificate", "Certificate information"],
-                ].map(([k, l]) => (
-                  <Area key={k} label={l} value={form[k]} onChange={set(k)} />
-                ))}
-              </>
-            )}
             <h3>Pass template</h3>
             <p>
               The PAICONS layout is included. Upload an optional background and
@@ -1043,6 +1053,120 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               label="Gallery photographs (one uploaded link per line)"
               value={form.gallery}
               onChange={set("gallery")}
+            />
+          </>
+        )}
+        {kind === "courses" && (
+          <>
+            <p className="muted">
+              Keep it simple: what the course covers, whether it's free or
+              paid, and where students go once they have access. No dates or
+              venues — a course is available whenever someone gets access.
+            </p>
+            <div className="grid">
+              <Choice
+                label="Category"
+                value={form.category}
+                onChange={set("category")}
+                options={[
+                  "Workshop",
+                  "Bootcamp",
+                  "Self-Paced Course",
+                  "Masterclass",
+                  "Certification",
+                ]}
+              />
+              <Choice
+                label="Price"
+                value={form.paid ? "paid" : "free"}
+                onChange={(v: string) => set("paid")(v === "paid")}
+                options={[
+                  { value: "free", label: "Free" },
+                  { value: "paid", label: "Paid" },
+                ]}
+              />
+              {form.paid && (
+                <Field
+                  label="Price (PKR)"
+                  type="number"
+                  min="1"
+                  value={form.price}
+                  onChange={(v: string) => set("price")(Number(v))}
+                />
+              )}
+            </div>
+            <div className="grid">
+              <Upload
+                label="Course video (optional)"
+                accept="video/mp4"
+                value={form.video}
+                onChange={set("video")}
+              />
+              <Field
+                label="Live session link (optional — Google Meet, Zoom, etc.)"
+                value={form.venue}
+                onChange={set("venue")}
+              />
+            </div>
+            <Field
+              label="Course content link — where students land once they have access (e.g. a Google Drive folder)"
+              type="url"
+              value={form.courseLink}
+              onChange={set("courseLink")}
+              required
+            />
+            <p className="muted">
+              A free course opens this link the moment someone enters their
+              name and email. A paid course opens it once you approve their
+              payment screenshot in the Payments tab — exactly like an event
+              pass.
+            </p>
+            <Area
+              label="Skills students will gain — one per line"
+              placeholder={"Prompt engineering basics\nBuilding with the OpenAI API\nShipping a small AI project"}
+              value={form.outcomes}
+              onChange={set("outcomes")}
+            />
+            <div className="grid">
+              <Field
+                label="Learners enrolled (shown publicly as social proof)"
+                type="number"
+                min="0"
+                value={form.enrolledCount}
+                onChange={(v: string) => set("enrolledCount")(Number(v))}
+              />
+              <Field
+                label="Rating out of 5 (e.g. 4.5) — leave blank to hide"
+                value={form.rating}
+                onChange={set("rating")}
+              />
+              <Field
+                label="Number of reviews"
+                type="number"
+                min="0"
+                value={form.reviewCount}
+                onChange={(v: string) => set("reviewCount")(Number(v))}
+              />
+            </div>
+            <Area
+              label="Certificate details (optional) — leave blank to hide the certificate badge"
+              value={form.certificate}
+              onChange={set("certificate")}
+            />
+            <Area
+              label="Curriculum (optional)"
+              value={form.curriculum}
+              onChange={set("curriculum")}
+            />
+            <Area
+              label="Requirements (optional)"
+              value={form.requirements}
+              onChange={set("requirements")}
+            />
+            <Area
+              label="Frequently asked questions (optional)"
+              value={form.faqs}
+              onChange={set("faqs")}
             />
           </>
         )}
@@ -1220,7 +1344,7 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
           Save Draft
         </button>
       </div>
-      {isEvent && (
+      {kind === "events" && (
         <section className="panel">
           <h2>Ticket types</h2>
           {!savedId ? (
@@ -1260,6 +1384,23 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
             </>
           )}
         </section>
+      )}
+      {kind === "courses" && form.status !== "published" && savedId && (
+        <div className="panel" style={{ marginTop: 16 }}>
+          <strong>This course is still a draft.</strong>
+          <p>
+            It won't appear on the website until you publish it. Access
+            (Free or Paid) is set automatically from the Price choice above —
+            there's nothing else to configure.
+          </p>
+          <button
+            className="button"
+            disabled={busy}
+            onClick={() => save("published")}
+          >
+            {busy ? "Publishing…" : "Publish This Course"}
+          </button>
+        </div>
       )}
     </>
   );

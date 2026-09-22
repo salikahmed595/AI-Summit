@@ -193,6 +193,16 @@ async function route(req: Request, parts: string[]) {
         origin: runtime().SITE_URL || new URL(req.url).origin,
       });
     }
+    if (action === "certificate") {
+      const r = await db()
+        .prepare(
+          "SELECT * FROM records WHERE kind='certificates' AND slug=? AND status='published'",
+        )
+        .bind(String(parts[1] || "").toLowerCase())
+        .first<any>();
+      if (!r) return response({ error: "Certificate not found" }, 404);
+      return response({ certificate: clean(r) });
+    }
     if (action === "verify") {
       const r = await db()
         .prepare("SELECT id,status,checked_at FROM registrations WHERE qr=?")
@@ -422,6 +432,83 @@ async function route(req: Request, parts: string[]) {
         );
       throw err;
     }
+  }
+  if (action === "claim-certificate") {
+    await rate(req, "claim-certificate", 10);
+    const data = z
+      .object({
+        name: short.min(2),
+        date: short.regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+      .parse(await req.json());
+    const r = await db()
+      .prepare("SELECT * FROM registrations WHERE access_hash=?")
+      .bind(await hash(req.headers.get("x-pass-key") || ""))
+      .first<any>();
+    if (!r || r.status !== "active")
+      throw new Error("This registration has no available certificate");
+    const e = await eventById(r.event_id);
+    if (!e || e.kind !== "courses" || !e.certificate)
+      throw new Error("Certificates are not available for this course");
+    const existing = JSON.parse(r.data || "{}");
+    // One certificate per registration — a repeat claim just returns the one
+    // already issued rather than minting a second code for the same person.
+    if (existing.certificateCode) {
+      return response({
+        code: existing.certificateCode,
+        name: existing.certificateName,
+        date: existing.certificateDate,
+      });
+    }
+    let code = "";
+    for (let attempt = 0; attempt < 5 && !code; attempt++) {
+      const candidate = `PAI-${token().slice(0, 5).toUpperCase()}-${token().slice(0, 5).toUpperCase()}`;
+      try {
+        await db()
+          .prepare(
+            "INSERT INTO records(id,kind,slug,title,status,data,updated) VALUES(?,?,?,?,?,?,?)",
+          )
+          .bind(
+            crypto.randomUUID(),
+            "certificates",
+            candidate.toLowerCase(),
+            data.name,
+            "published",
+            JSON.stringify({
+              name: data.name,
+              date: data.date,
+              code: candidate,
+              courseId: e.id,
+              courseTitle: e.title,
+              email: r.email,
+              issued: now(),
+            }),
+            now(),
+          )
+          .run();
+        code = candidate;
+      } catch (err) {
+        if (
+          !String(err).includes("UNIQUE") &&
+          !String(err).includes("duplicate key value")
+        )
+          throw err;
+      }
+    }
+    if (!code) throw new Error("Couldn't issue a certificate. Please retry.");
+    await db()
+      .prepare("UPDATE registrations SET data=? WHERE id=?")
+      .bind(
+        JSON.stringify({
+          ...existing,
+          certificateCode: code,
+          certificateName: data.name,
+          certificateDate: data.date,
+        }),
+        r.id,
+      )
+      .run();
+    return response({ code, name: data.name, date: data.date });
   }
   if (action === "message") {
     await rate(req, "message", 10);

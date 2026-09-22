@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api } from "./platform";
+import { ClaimCertificate } from "./certificate";
 export default function CourseAccess() {
   const [data, setData] = useState<any>(),
     [key, setKey] = useState(""),
@@ -110,12 +111,59 @@ export default function CourseAccess() {
                   Open Your Course ↗
                 </a>
               )}
-              {e.certificate && (
-                <p className="muted" style={{ marginTop: 16 }}>
-                  This course includes a certificate of completion. See the
-                  course page for details.
-                </p>
-              )}
+            </div>
+          )}
+          {r.status === "active" && e.certificate && (
+            <ClaimCertificate
+              courseTitle={e.title}
+              category={e.category}
+              accessKey={key}
+              defaultName={r.name}
+              origin={data.origin}
+              existing={
+                r.certificateCode
+                  ? {
+                      code: r.certificateCode,
+                      name: r.certificateName,
+                      date: r.certificateDate,
+                    }
+                  : undefined
+              }
+            />
+          )}
+          {r.status === "active" && (
+            <div className="panel">
+              <h2>Know someone learning AI?</h2>
+              <p>
+                This course is free — share it and they can start today too.
+              </p>
+              <div className="row">
+                <button
+                  className="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(
+                        `${data.origin}/courses/${e.slug}`,
+                      );
+                      setNotice("Course link copied.");
+                    } catch {
+                      setNotice("Copy the link from your browser.");
+                    }
+                  }}
+                >
+                  Copy Course Link
+                </button>
+                <a
+                  className="text-button"
+                  href={`https://wa.me/?text=${encodeURIComponent(
+                    `Free course: "${e.title}" by PAICONS. I just took it — worth a look: ${data.origin}/courses/${e.slug}`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Share on WhatsApp
+                </a>
+              </div>
             </div>
           )}
         </>

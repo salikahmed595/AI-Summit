@@ -36,6 +36,7 @@ import {
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import PassDownload from "./pass-download";
 import CourseAccess from "./course-access";
+import { CertificateVerify } from "./certificate";
 import { formatTime12 } from "./format-time";
 import { cleanDescription, mapsHref, eventStage } from "./event-text";
 import { DEFAULT_BANK_DETAILS } from "./payment-info";
@@ -755,7 +756,8 @@ export default function Platform({ path }: { path: string[] }) {
       section === "admin" ||
       section === "pass" ||
       section === "verify" ||
-      section === "course-access"
+      section === "course-access" ||
+      section === "certificate"
     )
       return;
     api(
@@ -774,6 +776,8 @@ export default function Platform({ path }: { path: string[] }) {
           <PassDownload />
         ) : section === "course-access" ? (
           <CourseAccess />
+        ) : section === "certificate" ? (
+          <CertificateVerify code={path[1]} />
         ) : section === "verify" ? (
           <Verify qr={path[1]} />
         ) : error ? (

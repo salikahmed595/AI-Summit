@@ -206,6 +206,16 @@ export async function eventById(id: string) {
       .first(),
   );
 }
+export async function certificateByCode(code: string) {
+  return clean(
+    await db()
+      .prepare(
+        "SELECT * FROM records WHERE kind='certificates' AND slug=? AND status='published'",
+      )
+      .bind(code.toLowerCase())
+      .first(),
+  );
+}
 export async function passes(id: string) {
   return (
     await db()

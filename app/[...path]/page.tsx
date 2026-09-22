@@ -1,6 +1,6 @@
 import { requireSiteUser } from "@/app/site-auth";
 import { googleSignIn, googleSignOut } from "@/app/auth-actions";
-import { identity, content, runtime } from "@/lib/server";
+import { identity, content, runtime, certificateByCode } from "@/lib/server";
 import { cleanDescription } from "@/app/event-text";
 import Platform from "@/app/platform";
 import { notFound } from "next/navigation";
@@ -32,6 +32,13 @@ export async function generateMetadata({
         if (record.banner) image = new URL(record.banner, base).href;
       }
     }
+    if (path[0] === "certificate" && path[1]) {
+      const cert = await certificateByCode(path[1]);
+      if (cert) {
+        title = `${cert.name} · ${cert.courseTitle} — PAICONS Certificate`;
+        description = `Verified certificate of completion issued by PAICONS to ${cert.name} for ${cert.courseTitle}.`;
+      }
+    }
   } catch {}
   return {
     title: title.charAt(0).toUpperCase() + title.slice(1) + " | PAICONS",
@@ -53,6 +60,7 @@ export default async function Page({
       "pass",
       "verify",
       "course-access",
+      "certificate",
       "events",
       "courses",
       "membership",

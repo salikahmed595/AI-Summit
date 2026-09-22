@@ -167,32 +167,36 @@ export function OrganizerCard({ organizer }: { organizer: string }) {
     );
   return (
     <div className="org org-brand" onPointerMove={spotlight}>
-      <span className="org-kicker">ORGANIZED BY</span>
-      <a className="org-mark" href="/" aria-label="PAICONS home">
-        {"PAICONS".split("").map((letter, i) => (
-          <span
-            key={i}
-            className="org-letter"
-            style={{ "--i": i } as React.CSSProperties}
-          >
-            {letter}
-          </span>
-        ))}
-        <sup>®</sup>
-      </a>
-      <p>Pakistan AI Collaboration &amp; Opportunities Network</p>
-      <div className="org-tags" aria-hidden="true">
-        <span>Learn.</span>
-        <span>Connect.</span>
-        <span className="lime">Build.</span>
+      <div className="org-main">
+        <span className="org-kicker">ORGANIZED BY</span>
+        <a className="org-mark" href="/" aria-label="PAICONS home">
+          {"PAICONS".split("").map((letter, i) => (
+            <span
+              key={i}
+              className="org-letter"
+              style={{ "--i": i } as React.CSSProperties}
+            >
+              {letter}
+            </span>
+          ))}
+          <sup>®</sup>
+        </a>
+        <p>Pakistan AI Collaboration &amp; Opportunities Network</p>
       </div>
-      <div className="org-actions">
-        <a href="/about">
-          Meet PAICONS <ArrowUpRight size={15} />
-        </a>
-        <a href="/events">
-          More events <ArrowUpRight size={15} />
-        </a>
+      <div className="org-side">
+        <div className="org-tags" aria-hidden="true">
+          <span>Learn.</span>
+          <span>Connect.</span>
+          <span className="lime">Build.</span>
+        </div>
+        <div className="org-actions">
+          <a href="/about">
+            Meet PAICONS <ArrowUpRight size={15} />
+          </a>
+          <a href="/events">
+            More events <ArrowUpRight size={15} />
+          </a>
+        </div>
       </div>
     </div>
   );

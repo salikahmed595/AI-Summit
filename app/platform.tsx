@@ -938,19 +938,6 @@ function EventDetails({ event: e, all }: any) {
               {e.instructor} · {e.duration} · {e.format} · {e.level}
             </p>
           )}
-          {(mapsHref(e) || e.organizer) && (
-            <div className="event-place">
-              {mapsHref(e) && (
-                <EventMap
-                  href={mapsHref(e)}
-                  venue={e.venue || e.city || "Event location"}
-                  address={e.address}
-                  city={e.city}
-                />
-              )}
-              {e.organizer && <OrganizerCard organizer={e.organizer} />}
-            </div>
-          )}
         </div>
         <aside id="tickets">
           <h2 style={{ fontSize: 30 }}>Get your pass.</h2>
@@ -1025,6 +1012,16 @@ function EventDetails({ event: e, all }: any) {
           )}
         </aside>
       </div>
+      {mapsHref(e) && (
+        <div className="event-place">
+          <EventMap
+            href={mapsHref(e)}
+            venue={e.venue || e.city || "Event location"}
+            address={e.address}
+            city={e.city}
+          />
+        </div>
+      )}
       {(() => {
         const bookable = (info?.tickets || [])
           .filter(
@@ -1121,6 +1118,11 @@ function EventDetails({ event: e, all }: any) {
               ))}
           </div>
         </>
+      )}
+      {e.organizer && (
+        <div className="event-place">
+          <OrganizerCard organizer={e.organizer} />
+        </div>
       )}
       <Dialog open={!!ticket} onOpenChange={(open) => !open && setTicket(null)}>
         <DialogContent className="ticket-dialog max-h-[90vh] overflow-y-auto sm:max-w-xl">

@@ -773,10 +773,12 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
         {isEvent && (
           <>
             <p className="muted">
-              Every event uses the same page layout — description, outcomes and
-              agenda open as dropdowns, tickets show as Free and Premium cards,
-              times show in 12-hour format, and the location and organizer
-              cards are added automatically. You only fill in the content.
+              Every event uses the same page layout, fixed in the site itself:
+              date / time / venue cards, then the description, outcomes and
+              agenda as dropdowns, then the Free and Premium pass cards, then
+              the 3D location map, then speakers, partners and gallery — and
+              the PAICONS organizer card always closes the page. Times show
+              in 12-hour format. You only fill in the content.
             </p>
             <div className="grid">
               <Choice

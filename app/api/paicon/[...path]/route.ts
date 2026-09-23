@@ -432,10 +432,34 @@ async function route(req: Request, parts: string[]) {
       if (
         String(err).includes("UNIQUE") ||
         String(err).includes("duplicate key value")
-      )
+      ) {
+        // A course has lifetime access and nothing sensitive attached (no
+        // photo, no physical ticket) — so re-entering the same email when
+        // you've lost your link just recovers it, by minting a fresh key
+        // for the existing registration and handing it straight back.
+        // Events keep the hard stop: recovering there would also hand back
+        // another registrant's uploaded photo, which is a real privacy
+        // issue a free course simply doesn't have.
+        if (isCourse) {
+          const existing = await db()
+            .prepare(
+              "SELECT id,status FROM registrations WHERE event_id=? AND email=?",
+            )
+            .bind(e.id, data.email)
+            .first<any>();
+          if (existing) {
+            const newKey = token();
+            await db()
+              .prepare("UPDATE registrations SET access_hash=? WHERE id=?")
+              .bind(await hash(newKey), existing.id)
+              .run();
+            return response({ key: newKey, status: existing.status });
+          }
+        }
         throw new Error(
           "This email is already registered for this event. Use your saved registration link.",
         );
+      }
       throw err;
     }
   }

@@ -201,7 +201,13 @@ async function route(req: Request, parts: string[]) {
         .bind(String(parts[1] || "").toLowerCase())
         .first<any>();
       if (!r) return response({ error: "Certificate not found" }, 404);
-      return response({ certificate: clean(r) });
+      const cert = clean(r);
+      // The course title always reflects the course's current name, not
+      // whatever it was called the moment this certificate was issued — a
+      // rename (e.g. fixing a typo) should update every certificate for it.
+      const course = await eventById(cert.courseId);
+      if (course) cert.courseTitle = course.title;
+      return response({ certificate: cert });
     }
     if (action === "verify") {
       const r = await db()
@@ -905,9 +911,16 @@ async function handle(
   try {
     return await route(req, (await ctx.params).path);
   } catch (error) {
+    // A field name and reason (e.g. "price: Expected number, received
+    // string") is far more useful to an admin filling in a form than a
+    // generic "check the fields" — and it's the same detail already in the
+    // server log, just surfaced back to whoever hit the problem.
     const msg =
       error instanceof z.ZodError
-        ? "Please check the form fields."
+        ? "Please check the form fields — " +
+          error.issues
+            .map((i) => `${i.path.join(".") || "value"}: ${i.message}`)
+            .join("; ")
         : error instanceof Error
           ? error.message
           : "Request failed";

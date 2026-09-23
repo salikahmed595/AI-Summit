@@ -44,15 +44,19 @@ export default function CourseAccess() {
             {r.name} · {e.title}
           </p>
           <div className="panel">
-            <strong>Status: {r.status.toUpperCase()}</strong>
+            <strong>
+              {r.status === "active"
+                ? "✅ Access granted — nothing more to do"
+                : "Status: " + r.status.toUpperCase()}
+            </strong>
             <p>
               {r.status === "pending"
-                ? "Your payment is awaiting a human review. Your course link will unlock here once it's approved."
+                ? "Your payment is awaiting a human review. Your course link will unlock here once it's approved — no need to do anything else."
                 : r.status === "rejected"
                   ? "Your payment was not approved. Please contact PAICONS for assistance."
                   : r.status === "cancelled"
                     ? "This access has been cancelled. Contact PAICONS for assistance."
-                    : "Your course is unlocked below."}
+                    : "You're fully enrolled. Your course, and your certificate once you finish it, are ready below."}
             </p>
             <p>
               Keep this private link safe. It is required to return to your

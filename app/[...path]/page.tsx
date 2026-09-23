@@ -158,7 +158,38 @@ export default async function Page({
               "@type": "Course",
               name: e.title,
               description: cleanDescription(e.description),
-              provider: { "@type": "Organization", name: "PAICONS" },
+              ...(e.banner
+                ? { image: new URL(e.banner, base).href }
+                : {}),
+              provider: {
+                "@type": "Organization",
+                name: "PAICONS",
+                sameAs: base,
+              },
+              hasCourseInstance: {
+                "@type": "CourseInstance",
+                courseMode: e.locationType === "online" || !e.venue
+                  ? "online"
+                  : "blended",
+                courseWorkload: "PT2H",
+              },
+              offers: {
+                "@type": "Offer",
+                category: e.paid ? "Paid" : "Free",
+                price: e.paid ? e.price || 0 : 0,
+                priceCurrency: "PKR",
+                availability: "https://schema.org/InStock",
+                url: base + "/courses/" + e.slug,
+              },
+              ...(e.rating
+                ? {
+                    aggregateRating: {
+                      "@type": "AggregateRating",
+                      ratingValue: e.rating,
+                      reviewCount: Math.max(1, Number(e.reviewCount) || 1),
+                    },
+                  }
+                : {}),
             };
     } else notFound();
   }

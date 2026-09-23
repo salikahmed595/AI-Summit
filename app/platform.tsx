@@ -832,7 +832,7 @@ function Listing({ items, kind }: any) {
     ...(kind === "events" ? ["Upcoming", "Past"] : []),
     ...Array.from(new Set(items.map((x: any) => x.category).filter(Boolean))),
   ];
-  const selected = items.filter(
+  const filtered = items.filter(
     (e: any) =>
       e.title.toLowerCase().includes(query.toLowerCase()) &&
       (filter === "All" ||
@@ -840,6 +840,21 @@ function Listing({ items, kind }: any) {
         (filter === "Past" && eventStage(e) === "past") ||
         e.category === filter),
   );
+  // Date-first ordering for events: soonest upcoming date at the very top,
+  // then every past event below the upcoming ones, most recently ended
+  // first. Undated upcoming events (date to be announced) sort last among
+  // upcoming rather than jumping the queue.
+  const selected =
+    kind !== "events"
+      ? filtered
+      : [...filtered].sort((a: any, b: any) => {
+          const stageA = eventStage(a),
+            stageB = eventStage(b);
+          if (stageA !== stageB) return stageA === "upcoming" ? -1 : 1;
+          return stageA === "upcoming"
+            ? (a.date || "9999-99-99").localeCompare(b.date || "9999-99-99")
+            : (b.date || "").localeCompare(a.date || "");
+        });
   useEffect(() => {
     const context = (document as any).modelContext;
     if (!context) return;

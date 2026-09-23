@@ -5,10 +5,10 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, GraduationCap, MoveUpRight, Sparkl
 import { api, Cards } from "./platform";
 import { VerifiedVoices } from "./premium-home";
 import { formatTime12 } from "./format-time";
-import { cleanDescription } from "./event-text";
+import { cleanDescription, eventStage } from "./event-text";
 import { Cosmos } from "./orbit-cosmos";
 
-const upcoming = (events: any[]) => events.filter((event) => event.date >= new Date().toISOString().slice(0, 10)).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+const upcoming = (events: any[]) => events.filter((event) => eventStage(event) === "upcoming").sort((a, b) => String(a.date || "9999-99-99").localeCompare(String(b.date || "9999-99-99")));
 
 function EventsCarousel({ events }: { events: any[] }) {
   const windowRef = useRef<HTMLDivElement>(null);

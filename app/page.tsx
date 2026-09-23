@@ -1,10 +1,22 @@
 import { Fragment } from "react";
+import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import { HomeContent } from "./home-live";
 import { CommunityPopup, PremiumMotion, TrustReels } from "./premium-home";
 import { Header } from "./platform";
 import { WhatIsPaicons, LearnConnectBuild, MissionStatement } from "./brand-story";
 
+const SITE_URL =
+  process.env.SITE_URL || "https://paicon-network.sure-emu-1764.chatgpt.site";
+const title = "AI Community in Pakistan — Events & Networking | PAICONS";
+const description =
+  "PAICONS is Pakistan's AI community. Join students, builders and businesses for AI events, meetups, courses and networking in Karachi and across Pakistan.";
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: { canonical: SITE_URL + "/" },
+  openGraph: { title, description, url: SITE_URL + "/" },
+};
 export default function Home() {
   return <><PremiumMotion /><Header /><main>
     <section className="hero hero-single"><div className="hero-copy"><div className="eyebrow"><span className="dot" /> PAKISTAN'S AI COMMUNITY. TOGETHER.</div><h1>Building Pakistan&apos;s AI future <em>together.</em></h1><p className="intro">PAICONS brings Pakistan&apos;s students, builders and businesses together to learn, connect and use AI.</p><div className="actions"><a className="button" href="#upcoming">Explore Upcoming Events <ArrowUpRight size={18} /></a><a className="text-button" href="/membership">Join the Community <ArrowUpRight size={18} /></a></div><div className="hero-foot"><span>SCROLL TO EXPLORE ↓</span></div></div></section>

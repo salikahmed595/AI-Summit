@@ -1,10 +1,67 @@
 import { requireSiteUser } from "@/app/site-auth";
 import { googleSignIn, googleSignOut } from "@/app/auth-actions";
-import { identity, content, runtime, certificateByCode } from "@/lib/server";
+import {
+  identity,
+  content,
+  runtime,
+  certificateByCode,
+  passes,
+} from "@/lib/server";
 import { cleanDescription } from "@/app/event-text";
 import Platform from "@/app/platform";
 import { notFound } from "next/navigation";
 export const dynamic = "force-dynamic";
+// One clear, distinct search intent per section instead of every page
+// falling back to the same generic sentence — each names PAICONS, Pakistan
+// and what's actually on that page, which is what shows up in a search
+// snippet and what a searcher actually compares against their query.
+const sectionMeta: Record<string, { title: string; description: string }> = {
+  events: {
+    title: "AI Events & Meetups in Pakistan",
+    description:
+      "Upcoming AI summits, meetups and workshops across Pakistan — see dates, venues, speakers and how to get your pass, from PAICONS, Pakistan's AI community.",
+  },
+  courses: {
+    title: "AI Courses & Workshops in Pakistan",
+    description:
+      "Practical, beginner-friendly AI courses and workshops from PAICONS, with free and paid options and a certificate of completion.",
+  },
+  membership: {
+    title: "Join the PAICONS AI Community in Pakistan",
+    description:
+      "Join PAICONS, Pakistan's AI community — get updates on AI events, courses and networking opportunities, and connect with students, builders and professionals across Pakistan.",
+  },
+  about: {
+    title: "About PAICONS — Pakistan's AI Community",
+    description:
+      "PAICONS (Pakistan AI Collaboration & Opportunities Network) connects students, developers, founders and professionals through AI. Meet the founder and the story behind the community.",
+  },
+  partners: {
+    title: "Partner with PAICONS — AI Events in Pakistan",
+    description:
+      "Partner with PAICONS to reach Pakistan's AI community through sponsorship, education, technology, venue or media partnerships across our events and programs.",
+  },
+  contact: {
+    title: "Contact PAICONS",
+    description:
+      "Questions about PAICONS events, courses, speaking or partnerships? Get in touch with Pakistan's AI community.",
+  },
+  privacy: {
+    title: "Privacy Policy",
+    description:
+      "How PAICONS collects, uses and protects your information across its events, courses and community services.",
+  },
+  terms: {
+    title: "Terms of Service",
+    description:
+      "The terms that govern using PAICONS events, courses, membership and community services.",
+  },
+  "refund-policy": {
+    title: "Refund Policy",
+    description:
+      "PAICONS' refund policy for event passes, tickets and paid courses.",
+  },
+};
 export async function generateMetadata({
   params,
 }: {
@@ -16,8 +73,10 @@ export async function generateMetadata({
   );
   const base =
     runtime().SITE_URL || "https://paicon-network.sure-emu-1764.chatgpt.site";
-  let title = path[0].replaceAll("-", " ");
+  const sectionFallback = path[0].replace(/^./, (c) => c.toUpperCase());
+  let title = sectionMeta[path[0]]?.title || sectionFallback;
   let description =
+    sectionMeta[path[0]]?.description ||
     "Learn. Connect. Build. Explore PAICONS events, courses and community.";
   let image: string | undefined;
   try {
@@ -40,12 +99,22 @@ export async function generateMetadata({
       }
     }
   } catch {}
+  // Titles already ending in the brand name (an admin-written SEO title, or
+  // a record literally called "PAICONS …") don't get it appended twice.
+  const finalTitle = /paicons\s*$/i.test(title.trim())
+    ? title.trim()
+    : title + " | PAICONS";
   return {
-    title: title.charAt(0).toUpperCase() + title.slice(1) + " | PAICONS",
+    title: finalTitle,
     description,
     robots: privatePage ? { index: false, follow: false } : undefined,
     alternates: { canonical: base + "/" + path.join("/") },
-    openGraph: { title, description, ...(image ? { images: [image] } : {}) },
+    openGraph: {
+      title: finalTitle,
+      description,
+      url: base + "/" + path.join("/"),
+      ...(image ? { images: [image] } : {}),
+    },
   };
 }
 export default async function Page({
@@ -125,7 +194,16 @@ export default async function Page({
     try {
       e = (await content(path[0])).find((x: any) => x.slug === path[1]);
     } catch {}
+    let tickets: any[] = [];
+    if (e && path[0] === "events") {
+      try {
+        tickets = await passes(e.id);
+      } catch {}
+    }
     if (e) {
+      const activePrices = tickets
+        .filter((t) => t.status === "active")
+        .map((t) => t.displayPrice);
       schema =
         path[0] === "events"
           ? {
@@ -134,11 +212,15 @@ export default async function Page({
               name: e.title,
               description: cleanDescription(e.description),
               startDate: e.date + "T" + e.time + ":00+05:00",
+              ...(e.end
+                ? { endDate: e.date + "T" + e.end + ":00+05:00" }
+                : {}),
               eventStatus: "https://schema.org/EventScheduled",
               eventAttendanceMode:
                 e.locationType === "online"
                   ? "https://schema.org/OnlineEventAttendanceMode"
                   : "https://schema.org/OfflineEventAttendanceMode",
+              ...(e.banner ? { image: new URL(e.banner, base).href } : {}),
               location:
                 e.locationType === "online"
                   ? { "@type": "VirtualLocation", url: base + "/events/" + e.slug }
@@ -147,11 +229,28 @@ export default async function Page({
                       name: e.venue,
                       address: {
                         "@type": "PostalAddress",
+                        ...(e.address ? { streetAddress: e.address } : {}),
                         addressLocality: e.city,
                         addressCountry: "PK",
                       },
                     },
-              organizer: { "@type": "Organization", name: "PAICONS" },
+              organizer: {
+                "@type": "Organization",
+                name: e.organizer || "PAICONS",
+                url: base,
+              },
+              ...(activePrices.length
+                ? {
+                    offers: {
+                      "@type": "AggregateOffer",
+                      priceCurrency: "PKR",
+                      lowPrice: Math.min(...activePrices),
+                      highPrice: Math.max(...activePrices),
+                      availability: "https://schema.org/InStock",
+                      url: base + "/events/" + e.slug,
+                    },
+                  }
+                : {}),
             }
           : {
               "@context": "https://schema.org",

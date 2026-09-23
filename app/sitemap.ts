@@ -15,8 +15,9 @@ export default async function sitemap() {
   try {
     entries = [...(await content("events")), ...(await content("courses"))];
   } catch {}
+  const now = new Date();
   return [
-    ...pages.map((p) => ({ url: base + "/" + p })),
+    ...pages.map((p) => ({ url: base + "/" + p, lastModified: now })),
     ...entries.map((e) => ({
       url: base + "/" + e.kind + "/" + e.slug,
       lastModified: e.updated,

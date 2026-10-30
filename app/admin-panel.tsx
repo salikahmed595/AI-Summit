@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api, Field, Area, Choice, Upload, DateField } from "./platform";
 import { googleSignOut } from "./auth-actions";
 import { DEFAULT_PAYMENT_TEXT } from "./payment-info";
+import PassLayoutEditor from "./pass-layout-editor";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -988,10 +989,9 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
             </div>
             <h3>Pass template</h3>
             <p>
-              The PAICONS layout is included. Upload an optional background and
-              configure photo placement. All outputs use standard rendering.
-              A ticket can override any of this below to give a tier (e.g.
-              Visitor vs Premium) its own artwork.
+              Upload the pass background for this event, then drag the photo
+              box and name box onto it. A ticket can override this below to
+              give a tier (e.g. Visitor vs Premium) its own artwork and layout.
             </p>
             <Upload
               label="Pass background (any size — the pass matches its aspect ratio)"
@@ -1005,37 +1005,53 @@ function RecordEditor({ record, data, onSave, onCancel }: any) {
               />
               <span>
                 Background already includes the title, date and venue text
-                (skip PAICONS' own text layout — only the photo is drawn on top)
+                (skip PAICONS' own text layout — only the photo and name are
+                drawn on top)
               </span>
             </label>
-            <div className="grid">
-              <Choice
-                label="Photo shape"
-                value={form.photoShape || "square"}
-                onChange={set("photoShape")}
-                options={[
-                  { value: "square", label: "Rounded square" },
-                  { value: "circle", label: "Circle" },
-                ]}
-              />
-              {[
-                ["accent", "Accent color", "color"],
-                ["photoX", "Photo left position", "number"],
-                ["photoY", "Photo top position", "number"],
-                ["photoSize", "Photo size", "number"],
-                ["nameY", "Attendee name position", "number"],
-              ].map(([k, l, t]) => (
-                <Field
-                  key={k}
-                  label={l}
-                  type={t}
-                  value={form[k]}
-                  onChange={(v: string) =>
-                    set(k)(t === "number" ? (v === "" ? "" : Number(v)) : v)
-                  }
+            <PassLayoutEditor
+              templateSrc={form.template || ""}
+              value={form.passLayout}
+              onChange={set("passLayout")}
+              legacy={form}
+            />
+            <Field
+              label="Accent color"
+              type="color"
+              value={form.accent}
+              onChange={set("accent")}
+            />
+            <details className="pass-layout-legacy">
+              <summary>
+                Old number-based placement (only used when no layout is set
+                above)
+              </summary>
+              <div className="grid">
+                <Choice
+                  label="Photo shape"
+                  value={form.photoShape || "square"}
+                  onChange={set("photoShape")}
+                  options={[
+                    { value: "square", label: "Rounded square" },
+                    { value: "circle", label: "Circle" },
+                  ]}
                 />
-              ))}
-            </div>
+                {[
+                  ["photoX", "Photo left position"],
+                  ["photoY", "Photo top position"],
+                  ["photoSize", "Photo size"],
+                  ["nameY", "Attendee name position"],
+                ].map(([k, l]) => (
+                  <Field
+                    key={k}
+                    label={l}
+                    type="number"
+                    value={form[k]}
+                    onChange={(v: string) => set(k)(v === "" ? "" : Number(v))}
+                  />
+                ))}
+              </div>
+            </details>
             <Area
               label="Social caption — use {NAME}, {EVENT_NAME}, {DATE}, {VENUE}"
               value={form.caption}
@@ -1579,9 +1595,9 @@ function TicketEditor({ eventId, initial }: any) {
         />
         <h3>Pass override for this ticket</h3>
         <p>
-          Optional — leave blank to use the event's own pass template. Set
-          this to give this tier (e.g. Premium) its own background and
-          photo placement.
+          Optional — leave blank to use the event's own pass background and
+          layout. Upload a background here to give this tier (e.g. Premium) its
+          own artwork, then set its photo and name boxes.
         </p>
         <Upload
           label="Pass background for this ticket (any size)"
@@ -1597,6 +1613,16 @@ function TicketEditor({ eventId, initial }: any) {
             Background already includes the title, date and venue text
           </span>
         </label>
+        <PassLayoutEditor
+          templateSrc={form.template || ""}
+          value={form.passLayout}
+          onChange={set("passLayout")}
+          legacy={form.photoX !== undefined ? form : undefined}
+        />
+        <details className="pass-layout-legacy">
+          <summary>
+            Old number-based placement (only used when no layout is set above)
+          </summary>
         <div className="grid">
           <Choice
             label="Photo shape"
@@ -1621,6 +1647,7 @@ function TicketEditor({ eventId, initial }: any) {
             />
           ))}
         </div>
+        </details>
         <p role="status">{error}</p>
         <button className="button" disabled={busy}>
           {busy ? "Saving…" : form.id ? "Update Ticket" : "Add Ticket"}

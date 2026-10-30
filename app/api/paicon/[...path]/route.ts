@@ -18,6 +18,21 @@ import {
 const txt = z.string().trim().max(10000);
 const short = z.string().trim().max(300);
 const id = z.string().uuid();
+// Visual pass layout set in /admin: boxes as fractions of the template.
+const layoutBox = z.object({
+  x: z.number().min(0).max(1),
+  y: z.number().min(0).max(1),
+  w: z.number().min(0.01).max(1),
+  h: z.number().min(0.01).max(1),
+});
+const passLayout = z.object({
+  photo: layoutBox.extend({ shape: z.enum(["circle", "square", "rect"]) }),
+  name: layoutBox.extend({
+    color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+    align: z.enum(["left", "center"]),
+    weight: z.enum(["bold", "normal"]),
+  }),
+});
 const optionalFields = [
   "organization",
   "role",
@@ -102,6 +117,7 @@ const detail = z.object({
   photoShape: z.enum(["square", "circle"]).default("square"),
   nameY: z.coerce.number().min(0).max(2000).default(710),
   templateHasText: z.boolean().default(false),
+  passLayout: passLayout.optional(),
   qrX: z.coerce.number().min(0).max(2000).optional(),
   qrY: z.coerce.number().min(0).max(2000).optional(),
   qrSize: z.coerce.number().min(80).max(800).optional(),
@@ -708,6 +724,7 @@ async function route(req: Request, parts: string[]) {
         photoSize: z.coerce.number().min(100).max(1200).optional(),
         photoShape: z.enum(["square", "circle"]).optional(),
         templateHasText: z.boolean().optional(),
+        passLayout: passLayout.optional(),
         qrX: z.coerce.number().min(0).max(2000).optional(),
         qrY: z.coerce.number().min(0).max(2000).optional(),
         qrSize: z.coerce.number().min(80).max(800).optional(),
@@ -741,6 +758,7 @@ async function route(req: Request, parts: string[]) {
           photoSize: t.photoSize,
           photoShape: t.photoShape,
           templateHasText: t.templateHasText,
+          passLayout: t.passLayout,
           qrX: t.qrX,
           qrY: t.qrY,
           qrSize: t.qrSize,

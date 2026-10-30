@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
-import PhotoPositioner, { type PhotoFrame } from "../../photo-positioner";
+import PhotoPositioner from "../../photo-positioner";
+import PassLayoutEditor from "../../pass-layout-editor";
+import { renderPass } from "../../pass-download";
+import { resolveLayout, type PassLayout } from "../../pass-layout";
 
 const DEFAULT_TEMPLATE = "/media/ai-summit-2026-visitor-pass.png";
 
-// Same sizing rule as the real pass page: the template's long side becomes
-// 1350, and the frame numbers are in that space — exactly the units of the
-// "Photo left/top position" and "Photo size" fields in /admin.
+// Same sizing rule as the real pass page: the template's long side is 1350.
 function canvasSizeOf(src: string): Promise<{ w: number; h: number }> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -44,23 +45,37 @@ function samplePhoto() {
   return c.toDataURL("image/png");
 }
 
+const image = (src: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+
+// Local-only walkthrough of both sides of the pass flow: the admin's visual
+// poster setup, then the attendee's photo step and the final rendered pass.
 export default function PhotoEditorPreview() {
   const [templateSrc, setTemplateSrc] = useState(DEFAULT_TEMPLATE);
+  const [layout, setLayout] = useState<PassLayout | undefined>();
+  // Step 2 follows the layout once the admin stops dragging, rather than
+  // restarting the photo editor on every pixel of movement.
+  const [applied, setApplied] = useState<PassLayout | undefined>();
+  const [hasText, setHasText] = useState(true);
   // The editor only mounts after the template size is known (client-side),
   // so building the sample photo here never causes a hydration mismatch.
   const [photoUrl, setPhotoUrl] = useState(() =>
     typeof document === "undefined" ? "" : samplePhoto(),
   );
+  const [attendeeName, setAttendeeName] = useState("Salik Ahmed");
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
-  const [frame, setFrame] = useState<PhotoFrame>({
-    x: 90,
-    y: 355,
-    size: 538,
-    shape: "circle",
-  });
-  const [result, setResult] = useState("");
+  const [pass, setPass] = useState("");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const timer = setTimeout(() => setApplied(layout), 400);
+    return () => clearTimeout(timer);
+  }, [layout]);
   useEffect(() => {
     canvasSizeOf(templateSrc)
       .then(setSize)
@@ -70,21 +85,83 @@ export default function PhotoEditorPreview() {
   const pick = (set: (url: string) => void) => (file?: File) => {
     if (!file) return;
     setError("");
-    setResult("");
+    setPass("");
     set(URL.createObjectURL(file));
   };
-  const num =
-    (k: "x" | "y" | "size") => (e: React.ChangeEvent<HTMLInputElement>) =>
-      setFrame((f) => ({ ...f, [k]: Number(e.target.value) || 0 }));
+  const placed =
+    size && resolveLayout(null, { passLayout: applied }, size.w, size.h);
+
+  async function finish(dataUrl: string) {
+    try {
+      // The real pass renderer, fed the same settings an event would have.
+      const canvas = await renderPass(
+        {
+          event: {
+            title: "Sample Event",
+            date: "2026-11-05",
+            time: "16:00",
+            venue: "Sample Venue",
+            city: "Karachi",
+            templateHasText: hasText,
+            passLayout: applied,
+          },
+          ticket: { name: "Visitor", template: templateSrc },
+          registration: { name: attendeeName, id: "SAMPLE-TICKET-ID" },
+        },
+        "",
+        false,
+        await image(dataUrl),
+      );
+      setPass(canvas.toDataURL("image/png"));
+    } catch {
+      setError("Couldn't render the pass.");
+    }
+  }
 
   return (
     <main className="page pass-generator">
       <div className="eyebrow">LOCAL PREVIEW · NOT LIVE</div>
-      <h1>Photo editor test.</h1>
+      <h1>Pass setup test.</h1>
       <p>
-        Try the pass photo step with any template and photo from your computer.
-        Nothing is uploaded anywhere.
+        Step 1 is what an admin does once per event poster. Step 2 is what each
+        attendee sees. Nothing is uploaded anywhere.
       </p>
+
+      <h2>1. Admin: set up the poster</h2>
+      <div className="row" style={{ flexWrap: "wrap", gap: 12 }}>
+        <label className="button">
+          Choose Poster
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) =>
+              pick((url) => {
+                setLayout(undefined);
+                setTemplateSrc(url);
+              })(e.target.files?.[0])
+            }
+          />
+        </label>
+        <label className="row">
+          <input
+            type="checkbox"
+            checked={hasText}
+            onChange={(e) => setHasText(e.target.checked)}
+          />
+          Poster already includes the title, date and venue text
+        </label>
+      </div>
+      <PassLayoutEditor
+        templateSrc={templateSrc}
+        value={layout}
+        onChange={(v) => {
+          setPass("");
+          setLayout(v);
+        }}
+      />
+
+      <h2>2. Attendee: position the photo</h2>
       <div className="row" style={{ flexWrap: "wrap", gap: 12 }}>
         <label className="button">
           Choose Photo
@@ -95,78 +172,46 @@ export default function PhotoEditorPreview() {
             onChange={(e) => pick(setPhotoUrl)(e.target.files?.[0])}
           />
         </label>
-        <label className="button">
-          Choose Template
+        <label>
+          Registered name (set at registration — attendees can&apos;t edit it){" "}
           <input
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={(e) => pick(setTemplateSrc)(e.target.files?.[0])}
+            type="text"
+            value={attendeeName}
+            onChange={(e) => setAttendeeName(e.target.value)}
           />
         </label>
       </div>
-      <fieldset className="photo-editor-group" style={{ marginTop: 20 }}>
-        <legend>Frame (same units as /admin)</legend>
-        <div className="row" style={{ flexWrap: "wrap", gap: 12 }}>
-          <label>
-            Photo left position{" "}
-            <input type="number" value={frame.x} onChange={num("x")} />
-          </label>
-          <label>
-            Photo top position{" "}
-            <input type="number" value={frame.y} onChange={num("y")} />
-          </label>
-          <label>
-            Photo size{" "}
-            <input type="number" value={frame.size} onChange={num("size")} />
-          </label>
-          <label>
-            Shape{" "}
-            <select
-              value={frame.shape}
-              onChange={(e) =>
-                setFrame((f) => ({
-                  ...f,
-                  shape: e.target.value as PhotoFrame["shape"],
-                }))
-              }
-            >
-              <option value="circle">Circle</option>
-              <option value="square">Square</option>
-            </select>
-          </label>
-        </div>
-        {size && (
-          <p style={{ fontSize: 13, margin: 0 }}>
-            Template canvas: {size.w} × {size.h}
-          </p>
-        )}
-      </fieldset>
+      {!applied && (
+        <p className="pass-layout-note" style={{ marginTop: 12 }}>
+          No layout set in step 1, so this uses the old default placement.
+        </p>
+      )}
       {error && (
         <p className="error" role="alert">
           {error}
         </p>
       )}
-      {photoUrl && size && (
+      {photoUrl && size && placed && (
         <PhotoPositioner
-          key={`${templateSrc}|${photoUrl}|${frame.x}|${frame.y}|${frame.size}|${frame.shape}`}
+          key={`${templateSrc}|${photoUrl}|${JSON.stringify(applied)}|${attendeeName}`}
           templateSrc={templateSrc}
           photoUrl={photoUrl}
           canvasWidth={size.w}
           canvasHeight={size.h}
-          frame={frame}
-          name="Your Name"
-          onConfirm={setResult}
+          frame={placed.frame}
+          name={attendeeName}
+          nameBox={placed.name}
+          onConfirm={finish}
           onError={setError}
         />
       )}
-      {result && (
+      {pass && (
         <>
-          <h2>Exported pass image</h2>
+          <h2>3. Final pass</h2>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={result}
-            alt="Exported pass preview"
+            src={pass}
+            alt="Final rendered pass"
             style={{ width: "100%", maxWidth: 430, borderRadius: 10 }}
           />
         </>

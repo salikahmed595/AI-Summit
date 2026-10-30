@@ -1,7 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api } from "./platform";
-import PhotoPositioner, { type PhotoFrame } from "./photo-positioner";
+import PhotoPositioner from "./photo-positioner";
+import {
+  clipToFrame,
+  drawNameInBox,
+  resolveLayout,
+  type NameBox,
+  type PhotoFrame,
+} from "./pass-layout";
 import { formatTime12 } from "./format-time";
 function image(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -69,7 +76,6 @@ export async function renderPass(
   // Per-ticket pass settings win over the event's own defaults, so tiers
   // like Visitor vs Premium can ship completely different artwork.
   const templateSrc = t.template || e.template;
-  const photoShape = t.photoShape || e.photoShape || "square";
   const skipBaseText = t.templateHasText ?? e.templateHasText ?? false;
   const c = document.createElement("canvas");
   let template: HTMLImageElement | null = null;
@@ -93,6 +99,7 @@ export async function renderPass(
   if (positionedBase) ctx.drawImage(positionedBase, 0, 0, c.width, c.height);
   else if (template) ctx.drawImage(template, 0, 0, c.width, c.height);
   const accent = e.accent || "#b9f464";
+  const layout = resolveLayout(e, t, c.width, c.height);
   if (!skipBaseText) {
     ctx.fillStyle = accent;
     ctx.fillRect(0, 0, c.width, 12);
@@ -119,30 +126,30 @@ export async function renderPass(
     } finally {
       URL.revokeObjectURL(photoUrl);
     }
-    const x = Number(t.photoX ?? e.photoX ?? 80),
-      y = Number(t.photoY ?? e.photoY ?? 330),
-      size = Number(t.photoSize ?? e.photoSize ?? 300);
-    const crop = Math.min(photo.width, photo.height);
+    // Centre-crop the photo to the frame's own aspect ratio.
+    const f = layout.frame;
+    const cropScale = Math.min(photo.width / f.w, photo.height / f.h);
+    const cw = f.w * cropScale,
+      ch = f.h * cropScale;
     ctx.save();
-    ctx.beginPath();
-    if (photoShape === "circle")
-      ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
-    else ctx.roundRect(x, y, size, size, 12);
-    ctx.clip();
+    clipToFrame(ctx, f);
     ctx.drawImage(
       photo,
-      (photo.width - crop) / 2,
-      (photo.height - crop) / 2,
-      crop,
-      crop,
-      x,
-      y,
-      size,
-      size,
+      (photo.width - cw) / 2,
+      (photo.height - ch) / 2,
+      cw,
+      ch,
+      f.x,
+      f.y,
+      f.w,
+      f.h,
     );
     ctx.restore();
   }
-  if (!skipBaseText) {
+  // A visual layout places the name in its own box on any template; the
+  // older layout below draws it at a fixed spot instead.
+  if (layout.name) drawNameInBox(ctx, r.name, layout.name);
+  if (!skipBaseText && !layout.name) {
     ctx.font = "bold 50px Arial";
     fitted(ctx, r.name, 80, Number(e.nameY ?? 710), c.width - 160, 50);
     ctx.font = "23px Arial";
@@ -152,6 +159,8 @@ export async function renderPass(
       80,
       Number(e.nameY ?? 710) + 44,
     );
+  }
+  if (!skipBaseText) {
     ctx.font = "bold 26px Arial";
     ctx.fillStyle = "#f4f5eb";
     ctx.fillText(e.date + " · " + formatTime12(e.time), 80, 870);
@@ -193,6 +202,7 @@ export default function PassDownload() {
   // photo into the frame themselves, instead of an automatic center-crop.
   const [photoUrl, setPhotoUrl] = useState(""),
     [frame, setFrame] = useState<PhotoFrame | null>(null),
+    [nameBox, setNameBox] = useState<NameBox | null>(null),
     [canvasSize, setCanvasSize] = useState<{ w: number; h: number } | null>(
       null,
     ),
@@ -240,12 +250,9 @@ export default function PassDownload() {
         if (cancelled) return;
         setTemplateSrc(src);
         setCanvasSize({ w, h });
-        setFrame({
-          x: Number(t.photoX ?? e.photoX ?? 80),
-          y: Number(t.photoY ?? e.photoY ?? 330),
-          size: Number(t.photoSize ?? e.photoSize ?? 300),
-          shape: t.photoShape || e.photoShape || "square",
-        });
+        const layout = resolveLayout(e, t, w, h);
+        setFrame(layout.frame);
+        setNameBox(layout.name);
         setPhotoUrl(objectUrl);
       } catch (e: any) {
         setError(e.message);
@@ -366,7 +373,8 @@ export default function PassDownload() {
                 <p>
                   This is the photograph you uploaded when registering — drag,
                   zoom and rotate it into place, and add a filter if you like.
-                  This is exactly how it will look on your pass.
+                  Your name is added automatically. This is exactly how it will
+                  look on your pass.
                 </p>
                 <PhotoPositioner
                   key={photoUrl}
@@ -375,15 +383,8 @@ export default function PassDownload() {
                   canvasWidth={canvasSize.w}
                   canvasHeight={canvasSize.h}
                   frame={frame}
-                  // Templates with their own artwork text get no auto-drawn
-                  // name, so let the visitor place theirs themselves.
-                  name={
-                    (data.ticket.templateHasText ??
-                    data.event.templateHasText ??
-                    false)
-                      ? r.name
-                      : undefined
-                  }
+                  name={r.name}
+                  nameBox={nameBox}
                   onConfirm={async (dataUrl) => {
                     try {
                       const img = await image(dataUrl);

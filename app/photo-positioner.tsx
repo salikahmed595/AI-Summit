@@ -1,13 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import type { Canvas, FabricImage, FabricText, filters } from "fabric";
-
-export type PhotoFrame = {
-  x: number;
-  y: number;
-  size: number;
-  shape: "circle" | "square";
-};
+import type { Canvas, FabricImage, filters } from "fabric";
+import {
+  cornerRadius,
+  drawNameInBox,
+  type NameBox,
+  type PhotoFrame,
+} from "./pass-layout";
 
 type Filter = "none" | "bw" | "warm" | "cool" | "vivid" | "fade" | "sepia";
 type Adjust = {
@@ -44,13 +43,10 @@ const FILTERS: { id: Filter; label: string; css: string }[] = [
 // the exported pass, and keeps filters smooth on phones.
 const MAX_PHOTO_EDGE = 1600;
 const MAX_ZOOM = 4;
-const NAME_COLORS = ["#ffffff", "#b9f464", "#111111"];
-const NAME_COLOR_LABELS = ["White", "Green", "Black"];
 
 // Interactive drag/zoom/rotate/filter step used before a registrant's pass is
-// finalized. The event/ticket's own template and photo-frame settings
-// (already configurable in /admin) drive this — no per-event code changes
-// needed. The photo always fully covers the frame: zoom never goes below a
+// finalized. The event/ticket's own template and pass layout (set visually
+// in /admin) drive this — no per-event code changes needed. The photo always fully covers the frame: zoom never goes below a
 // cover fit and dragging is clamped, at any rotation.
 export default function PhotoPositioner({
   templateSrc,
@@ -59,6 +55,7 @@ export default function PhotoPositioner({
   canvasHeight,
   frame,
   name,
+  nameBox,
   onConfirm,
   onError,
 }: {
@@ -67,9 +64,10 @@ export default function PhotoPositioner({
   canvasWidth: number;
   canvasHeight: number;
   frame: PhotoFrame;
-  // When given, the visitor's name is placed on the pass as text they can
-  // edit and drag into place (for templates whose artwork has a name box).
+  // The attendee's name and the layout's name box, both in canvas pixels.
+  // Shown as a fixed preview only: the final pass draws it the same way.
   name?: string;
+  nameBox?: NameBox | null;
   onConfirm: (dataUrl: string) => void;
   onError: (message: string) => void;
 }) {
@@ -80,8 +78,8 @@ export default function PhotoPositioner({
   } | null>(null);
   const photoRef = useRef<FabricImage | null>(null);
   const ghostRef = useRef<FabricImage | null>(null);
-  const nameRef = useRef<FabricText | null>(null);
-  const frameRef = useRef({ cx: 0, cy: 0, s: 1 });
+  const nameRef = useRef<FabricImage | null>(null);
+  const frameRef = useRef({ cx: 0, cy: 0, w: 1, h: 1 });
   const editSizeRef = useRef({ w: canvasWidth, h: canvasHeight, scale: 1 });
   const adjustRef = useRef<Adjust>(DEFAULTS);
   const filterFrameRef = useRef(0);
@@ -89,59 +87,33 @@ export default function PhotoPositioner({
   const [thumb, setThumb] = useState("");
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [nameText, setNameText] = useState(name ?? "");
-  // Font size in final pass pixels (the template's long side is 1350).
-  const [nameSize, setNameSize] = useState(44);
-  const [nameColor, setNameColor] = useState(NAME_COLORS[0]);
-
-  // Keep the name inside the pass.
-  function clampName() {
-    const text = nameRef.current;
-    if (!text) return;
-    const { w, h } = editSizeRef.current;
-    text.set({
-      left: Math.min(Math.max(0, text.left), Math.max(0, w - text.width)),
-      top: Math.min(Math.max(0, text.top), Math.max(0, h - text.height)),
-    });
-    text.setCoords();
-  }
-
-  function updateName(patch: { text?: string; size?: number; color?: string }) {
-    const text = nameRef.current;
-    if (patch.text !== undefined) setNameText(patch.text);
-    if (patch.size !== undefined) setNameSize(patch.size);
-    if (patch.color !== undefined) setNameColor(patch.color);
-    if (!text) return;
-    // Fabric can't measure an empty string; a space draws nothing.
-    if (patch.text !== undefined) text.set({ text: patch.text || " " });
-    if (patch.size !== undefined)
-      text.set({ fontSize: patch.size * editSizeRef.current.scale });
-    if (patch.color !== undefined) text.set({ fill: patch.color });
-    clampName();
-    fabricRef.current!.canvas.requestRenderAll();
-  }
 
   // Smallest scale at which the photo, rotated by `deg`, still covers the
   // whole frame: the frame's bounding box in the photo's own rotated space.
   function coverScale(deg: number) {
     const img = photoRef.current!;
-    const { s } = frameRef.current;
+    const { w, h } = frameRef.current;
     const rad = (deg * Math.PI) / 180;
-    const k = Math.abs(Math.cos(rad)) + Math.abs(Math.sin(rad));
-    return Math.max((s * k) / (img.width || 1), (s * k) / (img.height || 1));
+    const c = Math.abs(Math.cos(rad)),
+      sn = Math.abs(Math.sin(rad));
+    return Math.max(
+      (w * c + h * sn) / (img.width || 1),
+      (w * sn + h * c) / (img.height || 1),
+    );
   }
 
   // Keep the photo's centre where the frame stays fully covered. Works in the
   // photo's rotated coordinate space so it holds at any angle.
   function clamp(left: number, top: number) {
     const img = photoRef.current!;
-    const { cx, cy, s } = frameRef.current;
+    const { cx, cy, w, h } = frameRef.current;
     const rad = ((img.angle || 0) * Math.PI) / 180;
     const cos = Math.cos(rad),
       sin = Math.sin(rad);
-    const k = Math.abs(cos) + Math.abs(sin);
-    const maxX = Math.max(0, (img.width * img.scaleX - s * k) / 2);
-    const maxY = Math.max(0, (img.height * img.scaleY - s * k) / 2);
+    const c = Math.abs(cos),
+      sn = Math.abs(sin);
+    const maxX = Math.max(0, (img.width * img.scaleX - (w * c + h * sn)) / 2);
+    const maxY = Math.max(0, (img.height * img.scaleY - (w * sn + h * c)) / 2);
     const dx = left - cx,
       dy = top - cy;
     const lx = Math.min(maxX, Math.max(-maxX, dx * cos + dy * sin));
@@ -347,14 +319,17 @@ export default function PhotoPositioner({
 
         const fx = frame.x * scale,
           fy = frame.y * scale,
-          fsize = frame.size * scale;
-        frameRef.current = { cx: fx + fsize / 2, cy: fy + fsize / 2, s: fsize };
+          fw = frame.w * scale,
+          fh = frame.h * scale;
+        frameRef.current = { cx: fx + fw / 2, cy: fy + fh / 2, w: fw, h: fh };
+        const radius = cornerRadius({ x: fx, y: fy, w: fw, h: fh });
         const clip =
           frame.shape === "circle"
-            ? new fabric.Circle({
-                left: fx + fsize / 2,
-                top: fy + fsize / 2,
-                radius: fsize / 2,
+            ? new fabric.Ellipse({
+                left: fx + fw / 2,
+                top: fy + fh / 2,
+                rx: fw / 2,
+                ry: fh / 2,
                 originX: "center",
                 originY: "center",
                 absolutePositioned: true,
@@ -362,10 +337,10 @@ export default function PhotoPositioner({
             : new fabric.Rect({
                 left: fx,
                 top: fy,
-                width: fsize,
-                height: fsize,
-                rx: 8,
-                ry: 8,
+                width: fw,
+                height: fh,
+                rx: radius,
+                ry: radius,
                 originX: "left",
                 originY: "top",
                 absolutePositioned: true,
@@ -394,8 +369,8 @@ export default function PhotoPositioner({
         const handle = new fabric.Rect({
           left: fx,
           top: fy,
-          width: fsize,
-          height: fsize,
+          width: fw,
+          height: fh,
           originX: "left",
           originY: "top",
           fill: "rgba(0,0,0,0)",
@@ -416,39 +391,32 @@ export default function PhotoPositioner({
         ghostRef.current = ghost;
         reset();
 
-        if (name !== undefined) {
-          // Starts just below the photo frame, which is where most pass
-          // designs put the name box; the visitor can drag it anywhere.
-          const text = new fabric.FabricText(nameText || " ", {
-            left: fx,
-            top: Math.min(fy + fsize + editH * 0.03, editH * 0.9),
+        if (name && nameBox) {
+          // Fixed preview of the name in the layout's box, drawn exactly as
+          // the final pass draws it. Not part of the export: the pass adds it.
+          const layer = document.createElement("canvas");
+          layer.width = editW;
+          layer.height = editH;
+          drawNameInBox(layer.getContext("2d")!, name, {
+            ...nameBox,
+            x: nameBox.x * scale,
+            y: nameBox.y * scale,
+            w: nameBox.w * scale,
+            h: nameBox.h * scale,
+          });
+          const text = new fabric.FabricImage(layer, {
+            left: 0,
+            top: 0,
             originX: "left",
             originY: "top",
-            fontFamily: "Arial",
-            fontWeight: "bold",
-            fontSize: nameSize * scale,
-            fill: nameColor,
-            shadow: new fabric.Shadow({
-              color: "rgba(0,0,0,0.45)",
-              blur: 4,
-              offsetX: 0,
-              offsetY: 1,
-            }),
-            hasControls: false,
-            hasBorders: true,
-            borderColor: "#b9f464",
-            lockScalingX: true,
-            lockScalingY: true,
-            lockRotation: true,
-            hoverCursor: "move",
+            selectable: false,
+            evented: false,
           });
           canvas.add(text);
           nameRef.current = text;
-          clampName();
         }
 
         canvas.on("object:moving", (e) => {
-          if (e.target === nameRef.current) return clampName();
           if (e.target !== handle) return;
           photo.set(
             clamp(
@@ -534,12 +502,14 @@ export default function PhotoPositioner({
         runFilters();
       }
       ghostRef.current!.visible = false;
+      if (nameRef.current) nameRef.current.visible = false;
       canvas.discardActiveObject();
       canvas.renderAll();
       const url = canvas.toDataURL({
         format: "png",
         multiplier: 1 / editSizeRef.current.scale,
       });
+      if (nameRef.current) nameRef.current.visible = true;
       onConfirm(url);
     } catch {
       onError("Couldn't finish positioning your photo. Please retry.");
@@ -621,57 +591,6 @@ export default function PhotoPositioner({
             </button>
           </div>
         </fieldset>
-
-        {name !== undefined && (
-          <fieldset className="photo-editor-group">
-            <legend>Your name</legend>
-            <input
-              className="photo-editor-name"
-              type="text"
-              value={nameText}
-              maxLength={40}
-              disabled={!ready}
-              placeholder="Name on your pass"
-              aria-label="Name on your pass"
-              onChange={(e) => updateName({ text: e.target.value })}
-            />
-            <label className="photo-editor-slider">
-              <span>
-                Text size
-                <output>{nameSize}</output>
-              </span>
-              <input
-                type="range"
-                min={20}
-                max={90}
-                step={1}
-                value={nameSize}
-                disabled={!ready}
-                onChange={(e) => updateName({ size: Number(e.target.value) })}
-              />
-            </label>
-            <div
-              className="photo-editor-swatches"
-              role="group"
-              aria-label="Name colour"
-            >
-              {NAME_COLORS.map((c, i) => (
-                <button
-                  key={c}
-                  type="button"
-                  disabled={!ready}
-                  aria-label={NAME_COLOR_LABELS[i]}
-                  aria-pressed={nameColor === c}
-                  style={{ background: c }}
-                  onClick={() => updateName({ color: c })}
-                />
-              ))}
-            </div>
-            <p style={{ fontSize: 13, margin: 0 }}>
-              Drag your name on the pass to place it.
-            </p>
-          </fieldset>
-        )}
 
         <fieldset className="photo-editor-group">
           <legend>Filter</legend>

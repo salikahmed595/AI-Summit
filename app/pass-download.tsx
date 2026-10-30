@@ -364,9 +364,9 @@ export default function PassDownload() {
               <>
                 <h2>Position your photo.</h2>
                 <p>
-                  This is the photograph you uploaded when registering — drag
-                  and zoom it into place. This is exactly how it will look on
-                  your pass.
+                  This is the photograph you uploaded when registering — drag,
+                  zoom and rotate it into place, and add a filter if you like.
+                  This is exactly how it will look on your pass.
                 </p>
                 <PhotoPositioner
                   key={photoUrl}
@@ -375,6 +375,15 @@ export default function PassDownload() {
                   canvasWidth={canvasSize.w}
                   canvasHeight={canvasSize.h}
                   frame={frame}
+                  // Templates with their own artwork text get no auto-drawn
+                  // name, so let the visitor place theirs themselves.
+                  name={
+                    (data.ticket.templateHasText ??
+                    data.event.templateHasText ??
+                    false)
+                      ? r.name
+                      : undefined
+                  }
                   onConfirm={async (dataUrl) => {
                     try {
                       const img = await image(dataUrl);
